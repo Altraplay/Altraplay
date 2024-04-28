@@ -26,7 +26,33 @@ const user = async () => {
       ORDER BY (username, name)
       PRIMARY KEY username`
 		})
-		console.log('user table created successfully')
+	} catch (e) {
+		console.error(e)
+	}
+}
+
+async function blog() {
+	try {
+		await db.command({
+			query: `CREATE TABLE IF NOT EXISTS blog (
+                id String,
+                title String,
+                author String,
+                content String,
+                cover String,
+                likes Int256 DEFAULT 0,
+                dislikes Int256 DEFAULT 0,
+                views Int256 DEFAULT 0,
+                comments String DEFAULT '{}',
+                tags Array(String),
+                images Array(String) DEFAULT [''],
+                visible_to Array(String) DEFAULT ['everyone'],
+                categories Array(String),
+                published_at DateTime64 DEFAULT now()
+            ) ENGINE MergeTree()
+            ORDER BY (id, author)
+            PRIMARY KEY id`
+		})
 	} catch (e) {
 		console.error(e)
 	}
@@ -34,7 +60,7 @@ const user = async () => {
 
 async function push() {
 	await user()
-	console.log('pushed successfully')
+	await blog()
 }
 
 push()
