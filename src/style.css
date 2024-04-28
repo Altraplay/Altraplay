@@ -1,0 +1,130 @@
+@import url('https://fonts.googleapis.com/css2?family=Saira+Semi+Condensed:wght@400;600&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+:root {
+	--Primary: #0effbd;
+	--Primary-Hover: rgb(52, 211, 153);
+	--Secondary: #005eff;
+	--Secondary-Hover: rgb(29, 78, 216);
+	--BG: #000715;
+	--Highlight-1: hsl(220deg 97.47% 11.24%);
+	--Highlight-2: #022683;
+}
+::-webkit-scrollbar {
+	width: 7px;
+}
+::-webkit-scrollbar-track {
+	background: transparent;
+}
+::-webkit-scrollbar-thumb {
+	border-radius: 25px;
+	background: var(--Primary);
+}
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+	padding: 0;
+	margin: 0;
+}
+body {
+	background: var(--BG);
+	color: #fff;
+	overflow-x: hidden;
+	font-family: 'Saira Semi Condensed', sans-serif;
+	font-weight: 400;
+}
+*::selection {
+	background: var(--Primary);
+	color: var(--Highlight-1);
+}
+img::selection {
+	background: none;
+}
+*:focus {
+	outline: none;
+}
+h1,
+h2,
+h3,
+h4,
+h5,
+b {
+	font-weight: 600;
+}
+h1 {
+	font-size: 3.5rem;
+}
+
+h2 {
+	font-size: 2.6rem;
+}
+
+h3 {
+	font-size: 1.8rem;
+}
+
+h4 {
+	font-size: 1.5rem;
+}
+
+h5 {
+	font-size: 1.15rem;
+}
+
+small {
+	font-size: 0.9rem;
+}
+p,
+pre {
+	font-size: 1.3rem;
+}
+ul,
+ol,
+dl {
+	list-style: initial;
+}
+ul ul {
+	list-style: circle;
+	padding-left: 25px;
+}
+ol ol {
+	padding-left: 25px;
+}
+*::marker {
+	color: var(--Primary);
+}
+img {
+	border-radius: 12px;
+	transition: all 0.3s;
+}
+img:hover {
+	scale: 1.05;
+	border-radius: 5px;
+	z-index: 35;
+}
+form,
+input,
+textarea {
+	background: var(--Highlight-1);
+	border-radius: 5px;
+	color: #fff;
+	resize: none;
+	caret-color: var(--Primary);
+	accent-color: var(--Primary);
+}
+article a {
+	color: var(--Primary);
+}
+input::placeholder,
+textarea::placeholder {
+	color: #fff;
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+	transition: all 5000000s ease-in-out 0s;
+}
