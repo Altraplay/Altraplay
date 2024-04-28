@@ -58,9 +58,36 @@ async function blog() {
 	}
 }
 
+async function videos() {
+	try {
+		await db.command({
+			query: `CREATE TABLE IF NOT EXISTS videos (
+                id String,
+                title String,
+                url String,
+                description String,
+                cover String,
+                likes Int256 DEFAULT 0,
+                dislikes Int256 DEFAULT 0,
+                views Int256 DEFAULT 0,
+                comments String DEFAULT '{}',
+                tags Array(String),
+                visible_to Array(String) DEFAULT ['everyone'],
+                categories Array(String),
+                published_at DateTime64 DEFAULT now()
+            ) ENGINE MergeTree()
+            ORDER BY (id)
+            PRIMARY KEY id`
+		})
+	} catch (e) {
+		console.error(e)
+	}
+}
+
 async function push() {
 	await user()
 	await blog()
+	await videos()
 }
 
 push()
