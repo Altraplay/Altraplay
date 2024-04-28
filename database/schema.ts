@@ -65,6 +65,7 @@ async function videos() {
                 id String,
                 title String,
                 url String,
+                creator String,
                 description String,
                 cover String,
                 likes Int256 DEFAULT 0,
@@ -76,7 +77,7 @@ async function videos() {
                 categories Array(String),
                 published_at DateTime64 DEFAULT now()
             ) ENGINE MergeTree()
-            ORDER BY (id)
+            ORDER BY (id, creator)
             PRIMARY KEY id`
 		})
 	} catch (e) {
