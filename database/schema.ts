@@ -110,11 +110,33 @@ async function posts(){
     }
 }
 
+async function messages(){
+    try {
+        await db.command({
+            query: `CREATE TABLE IF NOT EXISTS messages (
+                id String,
+                sender String,
+                receiver String,
+                message String,
+                read Bool DEFAULT false,
+                reply_of String DEFAULT '',
+                edited Bool DEFAULT false,
+                sent_at DateTime64 DEFAULT now()
+            ) ENGINE MergeTree()
+            ORDER BY (id, sender)
+            PRIMARY KEY id`
+        })
+    } catch (e) {
+        console.error(e)
+    }
+}
+
 async function push() {
 	await user()
 	await blog()
 	await videos()
     await posts()
+    await messages()
 }
 
 push()
