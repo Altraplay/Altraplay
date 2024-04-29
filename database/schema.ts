@@ -1,4 +1,5 @@
 import db from './db'
+
 const user = async () => {
 	try {
 		await db.command({
@@ -90,10 +91,10 @@ async function videos() {
 	}
 }
 
-async function posts(){
-    try {
-        await db.command({
-            query: `CREATE TABLE IF NOT EXISTS posts (
+async function posts() {
+	try {
+		await db.command({
+			query: `CREATE TABLE IF NOT EXISTS posts (
                 id String,
                 title String,
                 url String,
@@ -109,16 +110,16 @@ async function posts(){
             ) ENGINE MergeTree()
             ORDER BY (id, owner)
             PRIMARY KEY id`
-        })
-    } catch (e) {
-        console.error(e)
-    }
+		})
+	} catch (e) {
+		console.error(e)
+	}
 }
 
-async function messages(){
-    try {
-        await db.command({
-            query: `CREATE TABLE IF NOT EXISTS messages (
+async function messages() {
+	try {
+		await db.command({
+			query: `CREATE TABLE IF NOT EXISTS messages (
                 id String,
                 sender String,
                 receiver String,
@@ -130,16 +131,16 @@ async function messages(){
             ) ENGINE MergeTree()
             ORDER BY (id, sender)
             PRIMARY KEY id`
-        })
-    } catch (e) {
-        console.error(e)
-    }
+		})
+	} catch (e) {
+		console.error(e)
+	}
 }
 
 async function history() {
-    try {
-        await db.command({
-            query: `CREATE TABLE IF NOT EXISTS history (
+	try {
+		await db.command({
+			query: `CREATE TABLE IF NOT EXISTS history (
                 id String,
                 user String,
                 visit_url String,
@@ -148,16 +149,16 @@ async function history() {
             ) ENGINE MergeTree()
             ORDER BY (id, user)
             PRIMARY KEY id`
-        })
-    } catch (e) {
-        console.error(e)
-    }
+		})
+	} catch (e) {
+		console.error(e)
+	}
 }
 
 async function searchHistory() {
-    try {
-        await db.command({
-            query: `CREATE TABLE IF NOT EXISTS search_history (
+	try {
+		await db.command({
+			query: `CREATE TABLE IF NOT EXISTS search_history (
                 id String,
                 user String,
                 query String,
@@ -165,20 +166,37 @@ async function searchHistory() {
             ) ENGINE MergeTree()
             ORDER BY (id, user)
             PRIMARY KEY id`
-        })
-    } catch (e) {
-        console.error(e)
-    }
+		})
+	} catch (e) {
+		console.error(e)
+	}
+}
+
+async function logs() {
+	try {
+		await db.command({
+			query: `CREATE TABLE IF NOT EXISTS logs (
+                id String,
+                log String,
+                time DateTime64 DEFAULT now()
+            ) ENGINE MergeTree()
+            ORDER BY (id, log)
+            PRIMARY KEY id`
+		})
+	} catch (e) {
+		console.error(e)
+	}
 }
 
 async function push() {
 	await user()
 	await blog()
 	await videos()
-    await posts()
-    await messages()
-    await history()
-    await searchHistory()
+	await posts()
+	await messages()
+	await history()
+	await searchHistory()
+    await logs()
 }
 
 push()
