@@ -24,7 +24,8 @@ const user = async () => {
         is_history_on Bool DEFAULT true,
         liked Array(String) DEFAULT [''],
         disliked Array(String) DEFAULT [''],
-        only_visible_to String DEFAULT 'everyone'
+        only_visible_to String DEFAULT 'everyone',
+        is_email_verified Bool DEFAULT false,
         joined DateTime64 DEFAULT now()
       ) ENGINE MergeTree()
       ORDER BY (username, name)
