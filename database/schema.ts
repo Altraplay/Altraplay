@@ -131,12 +131,31 @@ async function messages(){
     }
 }
 
+async function history() {
+    try {
+        await db.command({
+            query: `CREATE TABLE IF NOT EXISTS history (
+                id String,
+                user String,
+                visit_url String,
+                type String,
+                time DateTime64 DEFAULT now()
+            ) ENGINE MergeTree()
+            ORDER BY (id, user)
+            PRIMARY KEY id`
+        })
+    } catch (e) {
+        console.error(e)
+    }
+}
+
 async function push() {
 	await user()
 	await blog()
 	await videos()
     await posts()
     await messages()
+    await history()
 }
 
 push()
