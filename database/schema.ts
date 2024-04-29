@@ -10,7 +10,7 @@ const user = async () => {
         email String,
         password String,
         followers Int256 DEFAULT 0,
-        following Int256 DEFAULT 0,
+        following String DEFAULT '{}',
         profile_picture String DEFAULT 'https://upload.wikimedia.org/wikipedia/commons/9/99/Sample_User_Icon.png',
         banner String DEFAULT '',
         level String DEFAULT 'Silent Soul',
@@ -21,6 +21,10 @@ const user = async () => {
         verified Bool DEFAULT false,
         skills Array(String) DEFAULT [''],
         language Array(String) DEFAULT [''],
+        is_history_on Bool DEFAULT true,
+        liked Array(String) DEFAULT [''],
+        disliked Array(String) DEFAULT [''],
+        only_visible_to String DEFAULT 'everyone'
         joined DateTime64 DEFAULT now()
       ) ENGINE MergeTree()
       ORDER BY (username, name)
