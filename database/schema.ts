@@ -153,6 +153,23 @@ async function history() {
     }
 }
 
+async function searchHistory() {
+    try {
+        await db.command({
+            query: `CREATE TABLE IF NOT EXISTS search_history (
+                id String,
+                user String,
+                query String,
+                time DateTime64 DEFAULT now()
+            ) ENGINE MergeTree()
+            ORDER BY (id, user)
+            PRIMARY KEY id`
+        })
+    } catch (e) {
+        console.error(e)
+    }
+}
+
 async function push() {
 	await user()
 	await blog()
@@ -160,6 +177,7 @@ async function push() {
     await posts()
     await messages()
     await history()
+    await searchHistory()
 }
 
 push()
