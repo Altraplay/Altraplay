@@ -6,8 +6,9 @@ const config = {
 	kit: {
 		adapter: adapter(),
 		alias: {
-			'@components': './src/routes/components',
-			'@DB': './database'
+			'@Components': './src/routes/components',
+			'@DB': './database',
+			'@Kafka': './kafka'
 		}
 	},
 	preprocess: sequence([vitePreprocess(), preprocessMeltUI()])
