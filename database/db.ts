@@ -6,7 +6,7 @@ const db = createClient({
 	password: Bun.env.DB_PASSWORD,
 	database: Bun.env.DB_NAME || 'default',
 	compression: { request: true, response: true },
-	request_timeout: 0,
+	request_timeout: 50,
 	max_open_connections: 2000
 })
 
