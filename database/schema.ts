@@ -1,11 +1,10 @@
 import db from './db'
 
-const user = async () => {
+const users = async () => {
 	try {
 		await db.command({
-			query: `CREATE TABLE IF NOT EXISTS user (
+			query: `CREATE TABLE IF NOT EXISTS users (
         username String,
-        user_number Int256 DEFAULT 0,
         name String,
         bio String DEFAULT '',
         email String,
@@ -22,6 +21,8 @@ const user = async () => {
         verified Bool DEFAULT false,
         skills Array(String) DEFAULT [''],
         language Array(String) DEFAULT [''],
+        team Array(String) DEFAULT [''],
+        notifications String DEFAULT '{}',
         is_history_on Bool DEFAULT true,
         liked Array(String) DEFAULT [''],
         disliked Array(String) DEFAULT [''],
@@ -37,10 +38,10 @@ const user = async () => {
 	}
 }
 
-async function blog() {
+async function blogs() {
 	try {
 		await db.command({
-			query: `CREATE TABLE IF NOT EXISTS blog (
+			query: `CREATE TABLE IF NOT EXISTS blogs (
                 id String,
                 title String,
                 author String,
@@ -189,14 +190,14 @@ async function logs() {
 }
 
 async function push() {
-	await user()
-	await blog()
+	await users()
+	await blogs()
 	await videos()
 	await posts()
 	await messages()
 	await history()
 	await searchHistory()
-    await logs()
+	await logs()
 }
 
 push()
