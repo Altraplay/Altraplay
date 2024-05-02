@@ -28,6 +28,8 @@ const users = async () => {
         disliked Array(String) DEFAULT [''],
         only_visible_to String DEFAULT 'everyone',
         is_email_verified Bool DEFAULT false,
+        verification_token String DEFAULT '',
+        earning String DEFAULT '{}',
         joined DateTime64 DEFAULT now()
       ) ENGINE MergeTree()
       ORDER BY (username, name)
