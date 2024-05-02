@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  web:
+    build: ./
+
+    networks:
+      - TG
+
+    container_name: Tech-Gunner-Web
+
+    env_file:
+      - ./.env
+
+    ports:
+      - 5173:5173
+
+    develop:
+      watch:
+        - path: ./package.json
+          action: rebuild
+        - path: ./bun.lockb
+          action: rebuild
+        - path: ./src
+          target: /app/src
+          action: sync
+        - path: ./static
+          target: /app/static
+          action: sync
+
+    restart: on-failure
+
+    volumes:
+      - web:/app
+
+networks:
+  TG:
+    name: tech-gunner-network
+    driver: bridge
+
+volumes:
+  web:
