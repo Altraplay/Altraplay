@@ -14,7 +14,7 @@ function checkState(token: string, username?: string) {
 		if (check?.username === username && username) state = 'Owner'
 		else if (check) state = 'LoggedIn'
 		else state = 'None'
-		return state
+		return { state, username: check?.username }
 	} catch (e) {
 		console.error(e)
 	}
