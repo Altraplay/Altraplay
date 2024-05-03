@@ -16,7 +16,7 @@ function checkState(token: string, username?: string) {
 		else state = 'None'
 		return { state, username: check?.username }
 	} catch (e) {
-		console.error(e)
+		console.error('Error while decoding JWT', e)
 	}
 }
 
