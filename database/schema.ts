@@ -30,6 +30,7 @@ const users = async () => {
         is_email_verified Bool DEFAULT false,
         verification_token String DEFAULT '',
         earning String DEFAULT '{}',
+        achievements String DEFAULT '{}',
         joined DateTime64 DEFAULT now()
       ) ENGINE MergeTree()
       ORDER BY (username, name)
