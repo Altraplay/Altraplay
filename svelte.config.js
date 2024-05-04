@@ -8,7 +8,9 @@ const config = {
 		alias: {
 			'@Components': './src/routes/components',
 			'@DB': './database',
-			'@Kafka': './kafka'
+			'@Kafka': './kafka',
+			$Types: './src/types',
+			$Constants: './src/constant'
 		}
 	},
 	preprocess: sequence([vitePreprocess(), preprocessMeltUI()])
