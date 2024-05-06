@@ -3,6 +3,8 @@ import { helmet } from 'elysia-helmet'
 import { rateLimit } from 'elysia-rate-limit'
 import { compression } from 'elysia-compression'
 
+import auth from '../Controllers/auth'
+
 import type { RequestHandler } from './$types'
 
 const app = new Elysia({ prefix: '/api', precompile: true })
@@ -15,6 +17,7 @@ const app = new Elysia({ prefix: '/api', precompile: true })
 		})
 	)
 	.use(compression())
+	.use(auth)
 
 export const GET: RequestHandler = ({ request }) => app.handle(request)
 export const POST: RequestHandler = ({ request }) => app.handle(request)

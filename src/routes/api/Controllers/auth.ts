@@ -1,5 +1,5 @@
 import { Elysia, t } from 'elysia'
-import { GenToken } from '$lib/auth'
+import { GenToken, checkState } from '$lib/auth'
 import db from '@DB/db'
 import mailer from '$lib/mailer'
 import pushLogs from '$lib/logs'
@@ -256,6 +256,68 @@ const route = new Elysia({ prefix: '/auth' })
 			}
 		},
 		{ body: t.Object({ email: t.String(), password: t.String() }) }
-)
+	)
+	.post(
+		'/verify',
+		async ({ query, set }) => {
+			try {
+				const token = checkState(query.token)
+				if (token?.username) {
+					const res = await db.query({
+						query: `SELECT username, verification_token, password FROM users WHERE username = {username:String}`,
+						query_params: {
+							username: token.username
+						},
+						format: 'JSONEachRow'
+					})
+
+					const user = (await res.json()) as unknown as User[]
+					if (query.token === user[0]?.verification_token) {
+						if (user.length > 0) {
+							const matchUsername = checkState(query.token, user[0]?.username)
+
+							if (matchUsername?.state === 'Owner') {
+								const newToken = GenToken(
+									{ username: user[0]?.username, password: user[0]?.password },
+									'365d'
+								)
+								await db.command({
+									query: `ALTER TABLE users UPDATE is_email_verified = {is_email_verified:Bool} WHERE username = {username:String}`,
+									query_params: {
+										is_email_verified: true,
+										username: user[0]?.username
+									}
+								})
+								console.log('verified')
+
+								set.status = 201
+
+								return { token: newToken, username: user[0]?.username }
+							}
+						} else {
+							set.status = 'Unauthorized'
+							return { err: 'The link is invalid or expired' }
+						}
+					} else {
+						set.status = 'Unauthorized'
+						return { err: 'The link is invalid or expired' }
+					}
+				} else {
+					set.status = 'Unauthorized'
+					return { err: 'The link is invalid or expired' }
+				}
+			} catch (e) {
+				set.status = 500
+				console.error('Something went wrong while verifying the user:', e)
+				pushLogs(`Something went wrong while verifying the user: ${e}`)
+				return { err: "Something went wrong on our server, We'll try to fix it ASAP!" }
+			}
+		},
+		{
+			query: t.Object({
+				token: t.String()
+			})
+		}
+	)
 
 export default route
