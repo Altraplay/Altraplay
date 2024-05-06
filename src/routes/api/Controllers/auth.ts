@@ -164,5 +164,98 @@ const route = new Elysia({ prefix: '/auth' })
 			})
 		}
 	)
+	.post(
+		'/login',
+		async ({ body, set }) => {
+			try {
+				const { email, password } = body
+
+				const res = await db.query({
+					query: `SELECT username, email, password FROM users WHERE email = {email:String}`,
+					query_params: {
+						email: email.toLowerCase().replaceAll(' ', '')
+					},
+					format: 'JSONEachRow'
+				})
+
+				const user = (await res.json()) as unknown as User[]
+
+				if (user.length > 0) {
+					const match = await Bun.password.verify(password, user[0]?.password, 'bcrypt')
+
+					if (match) {
+						const token = GenToken(
+							{ username: user[0]?.username, password: user[0]?.password },
+							'1h'
+						)
+
+						await db.command({
+							query: `ALTER TABLE users UPDATE verification_token = {verification_token:String} WHERE email = {email:String}`,
+							query_params: {
+								verification_token: token,
+								email: email.toLowerCase().replaceAll(' ', '')
+							}
+						})
+
+						await mailer.emails.send({
+							from: `Tech Gunner Industries <onboarding@resend.dev>`,
+							to: user[0].email,
+							subject: 'Tech Gunner - Security Alert: Suspicious Login Attempt Detected',
+							html: `
+  
+							<div style="max-width: 600px; margin: 0 auto; padding: 20px; background: #09132d; color: #fff; font-family: Arial, sans-serif; border-radius: .8rem;">
+								<img src="https://techgunner.com/text-logo.png" width="500px" alt="Tech Gunner Logo" style="margin: 0 auto;">
+								<h1 style="text-align: center;">Hello, ${user[0]?.name}!</h1>
+								<p>We've detected a suspicious login attempt on your Tech Gunner account.</p>
+								<p>If this was you, please confirm the action by clicking the button below:</p>
+								<div style="text-align: center; margin-top: 20px;">
+									<a href="${Bun.env.DOMAIN}/verify?token=${token}" style="display: inline-block; padding: 5px 20px; background-color: #0effbd; color: #09132d; text-decoration: none; border-radius: 5px; font-weight: bold;">Verify Login</a>
+								</div>
+								<p>If you did not attempted to login, it's possible someone else may be trying to access your account. We recommend taking the following steps:</p>
+								<ul style="margin-left: 20px;">
+									<li>Change your password immediately.</li>
+									<li>Review your account activity for any unauthorized access.</li>
+									<li>Contact our support team if you need further assistance.</li>
+								</ul>
+								<p style="margin-top: 20px;">Best Regards,<br/>Tech Gunner Industries &copy;</p>
+							</div>
+`,
+							text: `
+							Hello, ${user[0]?.name}!
+											
+							We've detected a suspicious login attempt on your Tech Gunner account.
+											
+							If this was you, please confirm the action by clicking the link below:
+							${Bun.env.DOMAIN}/verify?token=${token}
+											
+							If you did not attempted to login, it's possible someone else may be trying to access your account. We recommend taking the following steps:
+						
+							- Change your password immediately.
+							- Review your account activity for any unauthorized access.
+							- Contact our support team if you need further assistance.
+											
+							Best Regards,
+							Tech Gunner Industries ©
+						`
+						})
+
+						set.status = 204
+					} else {
+						set.status = 400
+						return { err: 'The email or password are incorrect' }
+					}
+				} else {
+					set.status = 400
+					return { err: 'The email or password are incorrect' }
+				}
+			} catch (e) {
+				set.status = 500
+				console.error('An error occurred while logging in the user', e)
+				pushLogs(`An error occurred while logging in the user: ${e}`)
+				return { err: "Something went wrong on our server, We'll try to fix it ASAP!" }
+			}
+		},
+		{ body: t.Object({ email: t.String(), password: t.String() }) }
+)
 
 export default route
