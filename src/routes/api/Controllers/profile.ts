@@ -9,8 +9,9 @@ const route = new Elysia({ prefix: '/profile/:username' })
 		try {
 			const { username } = params
 
-			const user = (await db.query({
-				query: `SELECT
+			const user = (await db
+				.query({
+					query: `SELECT
 				username,
 				name,
 				bio,
@@ -28,11 +29,12 @@ const route = new Elysia({ prefix: '/profile/:username' })
 				is_email_verified,
 				joined
 			 FROM users WHERE username = {username:String}`,
-				query_params: {
-					username
-				},
-				format: 'JSONEachRow'
-			})) as unknown as User[]
+					query_params: {
+						username
+					},
+					format: 'JSONEachRow'
+				})
+				.then(res => res.json())) as unknown as User[]
 
 			if (user.length > 0 && user[0]?.is_email_verified) {
 				return {
@@ -171,5 +173,36 @@ const route = new Elysia({ prefix: '/profile/:username' })
 			body: t.Object({ password: t.String(), auth: t.String() })
 		}
 	)
+	.get('/blogs', async ({ params, set }) => {
+		try {
+			const { username } = params
+
+			const blogs = await db
+				.query({
+					query: `SELECT 
+				id,
+				title,
+				cover,
+				views,
+				published_at FROM blogs WHERE author = {username:String}`,
+					query_params: {
+						username
+					},
+					format: 'JSONEachRow'
+				})
+				.then(res => res.json())
+
+			if (blogs.length === 0) {
+				return { err: `${username} hasn't uploaded any Blog Posts` }
+			} else {
+				return { blogs }
+			}
+		} catch (e) {
+			set.status = 500
+			console.error(`Error retrieving blogs published by user: ${e}`)
+			pushLogs(`Error retrieving blogs published by user: ${e}`)
+			return { err: "Something went wrong on our server, We'll try to fix it ASAP!" }
+		}
+	})
 
 export default route
