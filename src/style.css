@@ -128,3 +128,6 @@ input:-webkit-autofill:focus,
 input:-webkit-autofill:active {
 	transition: all 5000000s ease-in-out 0s;
 }
+.wrapper {
+	@apply flex min-h-[93vh] flex-col flex-wrap items-center justify-center;
+}
