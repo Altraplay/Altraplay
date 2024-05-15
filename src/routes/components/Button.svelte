@@ -1,0 +1,56 @@
+<script lang="ts">
+	export let label = ''
+	export let type: 'button' | 'submit' | 'reset' = 'button'
+	export let variant: 'primary' | 'secondary' | 'danger' | 'warning' = 'primary'
+	export let size: 'md' | 'lg' = 'md'
+	export let disabled = false
+	export let className = ''
+	export let href = ''
+	export let target: '_blank' | '_top' | '_parent' | '_self' = '_self'
+
+	export let onClick = () => {}
+	export let onMouseEnter = () => {}
+	export let onMouseLeave = () => {}
+	export let onFocus = () => {}
+
+	let buttonClass: string
+
+	$: {
+		buttonClass = `
+      ${variantClasses[variant]}
+      ${sizeClasses[size]}
+      ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
+      flex items-center justify-center
+    `
+	}
+
+	const variantClasses: Record<string, string> = {
+		primary: 'bg-primary text-highlight-1 hover:bg-primary-hover focus:bg-primary-hover',
+		secondary: 'bg-highlight-2 hover:bg-secondary focus:bg-secondary',
+		danger: 'bg-[crimson] hover:bg-red-600 focus:bg-red-600',
+		warning: 'bg-yellow-300 text-highlight-1 hover:bg-yellow-700 focus:bg-yellow-700'
+	}
+
+	const sizeClasses: Record<string, string> = {
+		md: 'px-[15px] py-[3px] text-base',
+		lg: 'px-[255px] py-[2px] text-lg'
+	}
+</script>
+
+<button
+	{type}
+	class="rounded-[5px] font-bold transition-all disabled:cursor-not-allowed disabled:opacity-50 {buttonClass} {className}"
+	{disabled}
+	aria-disabled={disabled}
+	aria-hidden="false"
+	aria-label={label}
+	on:click={onClick}
+	on:mouseenter={onMouseEnter}
+	on:mouseleave={onMouseLeave}
+	on:focus={onFocus}>
+	{#if href}
+		<a {href} {target} data-sveltekit-preload-data>{label}</a>
+	{:else}
+		{label}
+	{/if}
+</button>
