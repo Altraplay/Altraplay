@@ -7,6 +7,7 @@
 	export let className = ''
 	export let href = ''
 	export let target: '_blank' | '_top' | '_parent' | '_self' = '_self'
+	export let btn: HTMLButtonElement | undefined = undefined
 
 	export let onClick = () => {}
 	export let onMouseEnter = () => {}
@@ -47,7 +48,8 @@
 	on:click={onClick}
 	on:mouseenter={onMouseEnter}
 	on:mouseleave={onMouseLeave}
-	on:focus={onFocus}>
+	on:focus={onFocus}
+	bind:this={btn}>
 	{#if href}
 		<a {href} {target} data-sveltekit-preload-data>{label}</a>
 	{:else}
