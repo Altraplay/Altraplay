@@ -2,6 +2,10 @@ FROM oven/bun:alpine
 
 WORKDIR /app
 
+RUN apk update
+RUN apk upgrade
+RUN apk add ffmpeg
+
 COPY *.json ./
 COPY bun.lockb .
 COPY *.config.* ./
