@@ -5,6 +5,7 @@ import { compression } from 'elysia-compression'
 
 import auth from '../Controllers/auth'
 import profile from '../Controllers/profile'
+import user from '../Controllers/user'
 
 import type { RequestHandler } from './$types'
 
@@ -20,10 +21,9 @@ const app = new Elysia({ prefix: '/api', precompile: true })
 	.use(compression())
 	.use(auth)
 	.use(profile)
+	.use(user)
 
 export const GET: RequestHandler = ({ request }) => app.handle(request)
 export const POST: RequestHandler = ({ request }) => app.handle(request)
 export const PUT: RequestHandler = ({ request }) => app.handle(request)
 export const DELETE: RequestHandler = ({ request }) => app.handle(request)
-
-export type App = typeof app
