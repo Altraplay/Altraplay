@@ -17,12 +17,7 @@
 	let buttonClass: string
 
 	$: {
-		buttonClass = `
-      ${variantClasses[variant]}
-      ${sizeClasses[size]}
-      ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
-      flex items-center justify-center
-    `
+		buttonClass = `${variantClasses[variant]} ${sizeClasses[size]}`
 	}
 
 	const variantClasses: Record<string, string> = {
@@ -40,7 +35,7 @@
 
 <button
 	{type}
-	class="rounded-[5px] font-bold transition-all disabled:cursor-not-allowed disabled:opacity-50 {buttonClass} {className}"
+	class="rounded-[5px] font-bold transition-all disabled:cursor-not-allowed disabled:opacity-50 {buttonClass} flex items-center justify-center {className}"
 	{disabled}
 	aria-disabled={disabled}
 	aria-hidden="false"
