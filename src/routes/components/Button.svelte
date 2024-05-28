@@ -9,10 +9,10 @@
 	export let target: '_blank' | '_top' | '_parent' | '_self' = '_self'
 	export let btn: HTMLButtonElement | undefined = undefined
 
-	export let onClick = () => {}
-	export let onMouseEnter = () => {}
-	export let onMouseLeave = () => {}
-	export let onFocus = () => {}
+	export let onClick = (e: MouseEvent): any => {}
+	export let onMouseEnter = (e: MouseEvent): any => {}
+	export let onMouseLeave = (e: MouseEvent): any => {}
+	export let onFocus = (e: FocusEvent): any => {}
 
 	let buttonClass: string
 
