@@ -22,7 +22,11 @@
 </script>
 
 <header class="sticky left-0 top-0 z-[150] flex w-screen items-center justify-evenly py-2">
-	<button id="menu" class="hover:fill-white focus:fill-white" aria-label="Toggle menu">
+	<button
+		id="menu"
+		class="hover:fill-white focus:fill-white"
+		aria-label="Toggle menu"
+		aria-keyshortcuts="Control+Space">
 		<svg
 			xmlns="http://www.w3.org/2000/svg"
 			height="30px"
@@ -44,6 +48,9 @@
 			class="w-[74vw] placeholder-slate-400"
 			placeholder="Search..."
 			autocomplete="off"
+			aria-keyshortcuts="/"
+			aria-autocomplete="none"
+			aria-label="Search Input"
 			bind:this={search} />
 		<button type="reset">
 			<span class="fa-solid fa-xmark p-2 text-center text-slate-400 transition hover:text-white" />
