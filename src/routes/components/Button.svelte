@@ -33,21 +33,25 @@
 	}
 </script>
 
-<button
-	{type}
-	class="rounded-[5px] font-bold transition-all disabled:cursor-not-allowed disabled:opacity-50 {buttonClass} flex items-center justify-center {className}"
-	{disabled}
-	aria-disabled={disabled}
-	aria-hidden="false"
-	aria-label={label}
-	on:click={onClick}
-	on:mouseenter={onMouseEnter}
-	on:mouseleave={onMouseLeave}
-	on:focus={onFocus}
-	bind:this={btn}>
-	{#if href}
-		<a {href} {target} data-sveltekit-preload-data>{label}</a>
-	{:else}
+{#if href}
+	<a
+		{href}
+		class="rounded-[5px] font-bold transition-all disabled:cursor-not-allowed disabled:opacity-50 {buttonClass} flex items-center justify-center {className}"
+		{target}
+		data-sveltekit-preload-data>{label}</a>
+{:else}
+	<button
+		{type}
+		class="rounded-[5px] font-bold transition-all disabled:cursor-not-allowed disabled:opacity-50 {buttonClass} flex items-center justify-center {className}"
+		{disabled}
+		aria-disabled={disabled}
+		aria-hidden="false"
+		aria-label={label}
+		on:click={onClick}
+		on:mouseenter={onMouseEnter}
+		on:mouseleave={onMouseLeave}
+		on:focus={onFocus}
+		bind:this={btn}>
 		{label}
-	{/if}
-</button>
+	</button>
+{/if}
