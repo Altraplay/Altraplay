@@ -177,3 +177,14 @@ input:-webkit-autofill:active {
 	opacity: 1;
 	visibility: visible;
 }
+.loader {
+	@apply box-border inline-block h-5 w-5 animate-[rotation_.5s_linear_infinite] rounded-[50%] border-r-[3px] border-t-[3px] border-solid border-r-transparent border-t-background;
+}
+@keyframes rotation {
+	0% {
+		transform: rotate(0deg);
+	}
+	100% {
+		transform: rotate(360deg);
+	}
+}
