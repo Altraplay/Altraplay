@@ -7,13 +7,13 @@
 	export let className = ''
 	export let href = ''
 	export let target: '_blank' | '_top' | '_parent' | '_self' = '_self'
-	export let btn: HTMLButtonElement | undefined = undefined
+	export let btn: HTMLButtonElement | HTMLAnchorElement | undefined = undefined
+	export let loading = false
 
 	export let onClick = (e: MouseEvent): any => {}
 	export let onMouseEnter = (e: MouseEvent): any => {}
 	export let onMouseLeave = (e: MouseEvent): any => {}
 	export let onFocus = (e: FocusEvent): any => {}
-	export let loading = false
 
 	let buttonClass: string
 
@@ -39,7 +39,10 @@
 		{href}
 		class="rounded-[5px] font-bold transition-all disabled:cursor-not-allowed disabled:opacity-50 {buttonClass} flex items-center justify-center {className}"
 		{target}
-		data-sveltekit-preload-data>
+		data-sveltekit-preload-data
+		aria-disabled={disabled || loading}
+		tabindex={disabled || loading ? -1 : 0}
+		bind:this={btn}>
 		{#if loading}
 			<span class="loader"></span>
 		{:else}
@@ -52,7 +55,8 @@
 		class="rounded-[5px] font-bold transition-all disabled:cursor-not-allowed disabled:opacity-50 {buttonClass} flex items-center justify-center {className}"
 		disabled={disabled || loading}
 		aria-disabled={disabled || loading}
-		aria-hidden="false"
+		aria-busy={loading}
+		aria-live="polite"
 		aria-label={label}
 		on:click={onClick}
 		on:mouseenter={onMouseEnter}
