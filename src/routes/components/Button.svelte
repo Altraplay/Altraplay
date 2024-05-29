@@ -13,6 +13,7 @@
 	export let onMouseEnter = (e: MouseEvent): any => {}
 	export let onMouseLeave = (e: MouseEvent): any => {}
 	export let onFocus = (e: FocusEvent): any => {}
+	export let loading = false
 
 	let buttonClass: string
 
@@ -38,13 +39,19 @@
 		{href}
 		class="rounded-[5px] font-bold transition-all disabled:cursor-not-allowed disabled:opacity-50 {buttonClass} flex items-center justify-center {className}"
 		{target}
-		data-sveltekit-preload-data>{label}</a>
+		data-sveltekit-preload-data>
+		{#if loading}
+			<span class="loader"></span>
+		{:else}
+			{label}
+		{/if}
+	</a>
 {:else}
 	<button
 		{type}
 		class="rounded-[5px] font-bold transition-all disabled:cursor-not-allowed disabled:opacity-50 {buttonClass} flex items-center justify-center {className}"
-		{disabled}
-		aria-disabled={disabled}
+		disabled={disabled || loading}
+		aria-disabled={disabled || loading}
 		aria-hidden="false"
 		aria-label={label}
 		on:click={onClick}
@@ -52,6 +59,10 @@
 		on:mouseleave={onMouseLeave}
 		on:focus={onFocus}
 		bind:this={btn}>
-		{label}
+		{#if loading}
+			<span class="loader"></span>
+		{:else}
+			{label}
+		{/if}
 	</button>
 {/if}
