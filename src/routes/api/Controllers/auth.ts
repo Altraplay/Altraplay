@@ -1,6 +1,6 @@
 import { Elysia, t } from 'elysia'
 import { GenToken, checkState } from '$lib/auth'
-import db from '@DB/db'
+import db from '@DB/clickhouse'
 import mailer from '$lib/mailer'
 import pushLogs from '$lib/logs'
 

@@ -1,6 +1,6 @@
 import { CompressionTypes, Partitioners } from 'kafkajs'
 import kafka from '@Kafka/kafka'
-import db from '@DB/db'
+import db from '@DB/clickhouse'
 import { randomString, randomInt } from '$lib/random'
 
 async function pushLogs(logs: string) {
