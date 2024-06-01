@@ -1,206 +1,112 @@
-import db from './db'
-
-const users = async () => {
-	try {
-		await db.command({
-			query: `CREATE TABLE IF NOT EXISTS users (
-        username String,
-        name String,
-        bio String DEFAULT '',
-        email String,
-        password String,
-        followers Int256 DEFAULT 0,
-        following String DEFAULT '{}',
-        profile_picture String DEFAULT 'https://upload.wikimedia.org/wikipedia/commons/9/99/Sample_User_Icon.png',
-        banner String DEFAULT '',
-        level String DEFAULT 'Silent Soul',
-        role String DEFAULT 'user',
-        points Int256 DEFAULT 0,
-        needs Int256 DEFAULT 100,
-        links Array(String),
-        verified Bool DEFAULT false,
-        skills Array(String) DEFAULT [''],
-        language Array(String) DEFAULT [''],
-        team Array(String) DEFAULT [''],
-        notifications String DEFAULT '{}',
-        is_history_on Bool DEFAULT true,
-        liked Array(String) DEFAULT [''],
-        disliked Array(String) DEFAULT [''],
-        only_visible_to String DEFAULT 'everyone',
-        is_email_verified Bool DEFAULT false,
-        verification_token String DEFAULT '',
-        earning String DEFAULT '{}',
-        achievements String DEFAULT '{}',
-        joined DateTime64 DEFAULT now()
-      ) ENGINE MergeTree()
-      ORDER BY (username, name)
-      PRIMARY KEY username`
-		})
-	} catch (e) {
-		console.error(e)
-	}
-}
-
-async function blogs() {
-	try {
-		await db.command({
-			query: `CREATE TABLE IF NOT EXISTS blogs (
-                id String,
-                title String,
-                author String,
-                content String,
-                cover String,
-                likes Int256 DEFAULT 0,
-                dislikes Int256 DEFAULT 0,
-                views Int256 DEFAULT 0,
-                comments String DEFAULT '{}',
-                tags Array(String),
-                images Array(String) DEFAULT [''],
-                visible_to Array(String) DEFAULT ['everyone'],
-                categories Array(String),
-                published_at DateTime64 DEFAULT now()
-            ) ENGINE MergeTree()
-            ORDER BY (id, author)
-            PRIMARY KEY id`
-		})
-	} catch (e) {
-		console.error(e)
-	}
-}
-
-async function videos() {
-	try {
-		await db.command({
-			query: `CREATE TABLE IF NOT EXISTS videos (
-                id String,
-                title String,
-                url String,
-                creator String,
-                description String,
-                cover String,
-                likes Int256 DEFAULT 0,
-                dislikes Int256 DEFAULT 0,
-                views Int256 DEFAULT 0,
-                comments String DEFAULT '{}',
-                tags Array(String),
-                visible_to Array(String) DEFAULT ['everyone'],
-                categories Array(String),
-                published_at DateTime64 DEFAULT now()
-            ) ENGINE MergeTree()
-            ORDER BY (id, creator)
-            PRIMARY KEY id`
-		})
-	} catch (e) {
-		console.error(e)
-	}
-}
-
-async function posts() {
-	try {
-		await db.command({
-			query: `CREATE TABLE IF NOT EXISTS posts (
-                id String,
-                title String,
-                url String,
-                owner String,
-                likes Int256 DEFAULT 0,
-                dislikes Int256 DEFAULT 0,
-                views Int256 DEFAULT 0,
-                comments String DEFAULT '{}',
-                tags Array(String),
-                visible_to Array(String) DEFAULT ['everyone'],
-                categories Array(String),
-                published_at DateTime64 DEFAULT now()
-            ) ENGINE MergeTree()
-            ORDER BY (id, owner)
-            PRIMARY KEY id`
-		})
-	} catch (e) {
-		console.error(e)
-	}
-}
-
-async function messages() {
-	try {
-		await db.command({
-			query: `CREATE TABLE IF NOT EXISTS messages (
-                id String,
-                sender String,
-                receiver String,
-                message String,
-                read Bool DEFAULT false,
-                reply_of String DEFAULT '',
-                edited Bool DEFAULT false,
-                sent_at DateTime64 DEFAULT now()
-            ) ENGINE MergeTree()
-            ORDER BY (id, sender)
-            PRIMARY KEY id`
-		})
-	} catch (e) {
-		console.error(e)
-	}
-}
-
-async function history() {
-	try {
-		await db.command({
-			query: `CREATE TABLE IF NOT EXISTS history (
-                id String,
-                user String,
-                visit_url String,
-                type String,
-                time DateTime64 DEFAULT now()
-            ) ENGINE MergeTree()
-            ORDER BY (id, user)
-            PRIMARY KEY id`
-		})
-	} catch (e) {
-		console.error(e)
-	}
-}
-
-async function searchHistory() {
-	try {
-		await db.command({
-			query: `CREATE TABLE IF NOT EXISTS search_history (
-                id String,
-                user String,
-                query String,
-                time DateTime64 DEFAULT now()
-            ) ENGINE MergeTree()
-            ORDER BY (id, user)
-            PRIMARY KEY id`
-		})
-	} catch (e) {
-		console.error(e)
-	}
-}
-
-async function logs() {
-	try {
-		await db.command({
-			query: `CREATE TABLE IF NOT EXISTS logs (
-                id String,
-                log String,
-                time DateTime64 DEFAULT now()
-            ) ENGINE MergeTree()
-            ORDER BY (id, log)
-            PRIMARY KEY id`
-		})
-	} catch (e) {
-		console.error(e)
-	}
-}
+import { executeQuery } from './db'
 
 async function push() {
-	await users()
-	await blogs()
-	await videos()
-	await posts()
-	await messages()
-	await history()
-	await searchHistory()
-	await logs()
+	await executeQuery(`CREATE TABLE IF NOT EXISTS users (
+        username text PRIMARY KEY,
+        name text,
+        bio text,
+        email text,
+        password text,
+        followers bigint,
+        following set<text>,
+        profile_picture text,
+        banner text,
+        level text,
+        role text,
+        points bigint,
+        needs bigint,
+        links set<text>,
+        verified boolean,
+        skills set<text>,
+        language set<text>,
+        team set<text>,
+        notifications map<text, text>,
+        is_history_on boolean,
+        liked set<text>,
+        disliked set<text>,
+        only_visible_to text,
+        is_email_verified boolean,
+        verification_token text,
+        earning map<text, text>,
+        achievements map<text, text>,
+        joined timestamp
+    );`)
+
+	await executeQuery(`CREATE TABLE IF NOT EXISTS blogs (
+        id text PRIMARY KEY,
+        title text,
+        author text,
+        content text,
+        cover text,
+        likes bigint,
+        dislikes bigint,
+        views bigint,
+        comments map<text, text>,
+        tags set<text>,
+        images list<text>,
+        visible_to set<text>,
+        categories set<text>,
+        published_at timestamp
+    );`)
+
+	await executeQuery(`CREATE TABLE IF NOT EXISTS videos (
+        id text PRIMARY KEY,
+        title text,
+        url text,
+        creator text,
+        description text,
+        cover text,
+        likes bigint,
+        dislikes bigint,
+        views bigint,
+        comments map<text, text>,
+        tags set<text>,
+        visible_to set<text>,
+        categories set<text>,
+        published_at timestamp
+    );`)
+
+	await executeQuery(`CREATE TABLE IF NOT EXISTS posts (
+        id text PRIMARY KEY,
+        title text,
+        url text,
+        owner text,
+        likes bigint,
+        dislikes bigint,
+        views bigint,
+        comments map<text, text>,
+        tags set<text>,
+        visible_to set<text>,
+        categories set<text>,
+        published_at timestamp
+    );`)
+
+	await executeQuery(`CREATE TABLE IF NOT EXISTS messages (
+        id text PRIMARY KEY,
+        sender text,
+        receiver text,
+        message text,
+        read boolean,
+        reply_of text,
+        edited boolean,
+        sent_at timestamp
+    );`)
+
+	await executeQuery(`CREATE TABLE IF NOT EXISTS history (
+        id text PRIMARY KEY,
+        user text,
+        visit_url text,
+        type text,
+        time timestamp
+    );`)
+
+	await executeQuery(`CREATE TABLE IF NOT EXISTS search_history (
+        id text PRIMARY KEY,
+        user text,
+        query text,
+        time timestamp
+    );`)
+	process.exit(0)
 }
 
 push()
