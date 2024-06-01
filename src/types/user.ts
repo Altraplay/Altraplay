@@ -4,8 +4,8 @@ export interface User {
 	bio: string
 	email: string
 	password: string
-	followers: number
-	following: string
+	followers: bigint
+	following: string[]
 	profile_picture: string
 	banner: string
 	level:
@@ -37,21 +37,21 @@ export interface User {
 		| 'Admin'
 		| 'Member'
 		| 'Advertiser'
-	points: number
-	needs: number
+	points: bigint
+	needs: bigint
 	links: string[]
 	verified: boolean
 	skills: string[]
 	language: string[]
 	team: string[]
-	notifications: string
+	notifications: Record<string, string>
 	is_history_on: boolean
 	liked: string[]
 	disliked: string[]
 	only_visible_to: string
 	is_email_verified: boolean
 	verification_token: string
-	earning: string
-	achievements: string
+	earning: Record<string, string>
+	achievements: Record<string, string>
 	joined: Date
 }
