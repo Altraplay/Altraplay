@@ -7,9 +7,11 @@ export const client = new cassandra.Client({
 	keyspace: 'tg'
 })
 
-export async function executeQuery(query: string, params: any[] = []) {
+export async function executeQuery(query: string, params: any[] = [], allowFiltering = false) {
 	try {
-		const result = await client.execute(query, params, { prepare: true })
+		const fullQuery = allowFiltering ? `${query} ALLOW FILTERING` : query
+		const result = await client.execute(fullQuery, params, { prepare: true })
+		console.log(fullQuery)
 		return result
 	} catch (error) {
 		console.error('Query execution error:', error)
