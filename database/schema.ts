@@ -2,7 +2,8 @@ import { executeQuery } from './db'
 
 async function push() {
 	await executeQuery(`CREATE TABLE IF NOT EXISTS users (
-        username text PRIMARY KEY,
+        id text PRIMARY KEY,
+        username text,
         name text,
         bio text,
         email text,
