@@ -1,11 +1,12 @@
 export interface User {
+	id: string
 	username: string
 	name: string
-	bio: string
+	bio?: string
 	email: string
 	password: string
 	followers: bigint
-	following: string[]
+	following?: string[]
 	profile_picture: string
 	banner: string
 	level:
@@ -39,19 +40,19 @@ export interface User {
 		| 'Advertiser'
 	points: bigint
 	needs: bigint
-	links: string[]
+	links?: string[]
 	verified: boolean
-	skills: string[]
-	language: string[]
-	team: string[]
-	notifications: Record<string, string>
-	is_history_on: boolean
-	liked: string[]
-	disliked: string[]
+	skills?: string[]
+	language?: string[]
+	team?: string[]
+	notifications?: Record<string, string>
+	is_history_on?: boolean
+	liked?: string[]
+	disliked?: string[]
 	only_visible_to: string
 	is_email_verified: boolean
 	verification_token: string
-	earning: Record<string, string>
-	achievements: Record<string, string>
+	earning?: Record<string, string>
+	achievements?: Record<string, string>
 	joined: Date
 }
