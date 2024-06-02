@@ -1,6 +1,19 @@
 import { executeQuery } from './db'
 
 async function push() {
+	await executeQuery(`CREATE TYPE IF NOT EXISTS reply (
+        who text,
+        msg text,
+        date timestamp
+    )`)
+
+	await executeQuery(`CREATE TYPE IF NOT EXISTS comment (
+        who text,
+        msg text,
+        replies list<frozen<reply>>,
+        date timestamp
+    )`)
+
 	await executeQuery(`CREATE TABLE IF NOT EXISTS users (
         id text PRIMARY KEY,
         username text,
@@ -19,7 +32,7 @@ async function push() {
         links set<text>,
         verified boolean,
         skills set<text>,
-        language set<text>,
+        languages set<text>,
         team set<text>,
         notifications map<text, text>,
         is_history_on boolean,
@@ -42,7 +55,7 @@ async function push() {
         likes bigint,
         dislikes bigint,
         views bigint,
-        comments map<text, text>,
+        comments list<frozen<comment>>,
         tags set<text>,
         images list<text>,
         visible_to set<text>,
@@ -60,7 +73,7 @@ async function push() {
         likes bigint,
         dislikes bigint,
         views bigint,
-        comments map<text, text>,
+        comments list<frozen<comment>>,
         tags set<text>,
         visible_to set<text>,
         categories set<text>,
@@ -75,7 +88,7 @@ async function push() {
         likes bigint,
         dislikes bigint,
         views bigint,
-        comments map<text, text>,
+        comments list<frozen<comment>>,
         tags set<text>,
         visible_to set<text>,
         categories set<text>,
