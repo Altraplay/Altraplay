@@ -1,6 +1,6 @@
 import { Elysia, t } from 'elysia'
 import { checkState } from '$lib/auth'
-import db from '@DB/clickhouse'
+import db from '@DB/orm'
 import pushLogs from '$lib/logs'
 import type { User } from '$Types/user'
 
@@ -12,25 +12,25 @@ const route = new Elysia({ prefix: '/user' })
 				const { email } = body
 				const username = `@${body.username.replaceAll(' ', '').toLowerCase()}`
 
-				const checkUsernameAvailability = (await db
-					.query({
-						query: 'SELECT is_email_verified FROM users WHERE username = {username:String}',
-						query_params: { username },
-						format: 'JSONEachRow'
+				const checkUsernameAvailability = await db
+					.findMany({
+						tables: ['users'],
+						where: { users: { username } },
+						select: { users: ['is_email_verified'] }
 					})
-					.then(async rows => await rows.json())) as User[]
+					.then(users => users.users)
 
-				const checkEmailAvailability = (await db
-					.query({
-						query: 'SELECT is_email_verified FROM users WHERE email = {email:String}',
-						query_params: { email },
-						format: 'JSONEachRow'
+				const checkEmailAvailability = await db
+					.findMany({
+						tables: ['users'],
+						where: { users: { email } },
+						select: { users: ['is_email_verified'] }
 					})
-					.then(async rows => await rows.json())) as User[]
+					.then(users => users.users)
 
 				if (
-					checkEmailAvailability.some(user => user?.is_email_verified) ||
-					checkUsernameAvailability.some(user => user?.is_email_verified)
+					checkEmailAvailability?.some(user => user?.is_email_verified) ||
+					checkUsernameAvailability?.some(user => user?.is_email_verified)
 				) {
 					const tryUsernames = [
 						`its${username.replace('@', '')}`,
@@ -38,21 +38,22 @@ const route = new Elysia({ prefix: '/user' })
 						`${username.replace('@', '')}official`,
 						`${username.replace('@', '')}s`
 					]
-					tryUsernames.forEach(async name => {
-						const user = await db
-							.query({
-								query:
-									'SELECT username, is_email_verified FROM users WHERE username = {username:String}',
-								query_params: { username: name },
-								format: 'JSONEachRow'
-							})
-							.then(async rows => (await rows.json()) as User[])
+
+					for (const name of tryUsernames) {
+						const user = (await db.findMany({
+							tables: ['users'],
+							where: { users: { username: name } },
+							select: { users: ['username', 'is_email_verified'] }
+						})) as User[]
+
 						if (user.some(user => user?.is_email_verified)) {
 							tryUsernames.splice(tryUsernames.indexOf(name), 1)
 						}
-					})
+					}
 					return { err: 'Username or email already exists', tryUsernames }
-				} else set.status = 204
+				} else {
+					set.status = 204
+				}
 			} catch (e) {
 				set.status = 500
 				console.error('Error checking availability for username and email:' + e)

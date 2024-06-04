@@ -1,11 +1,9 @@
 import { Elysia, t } from 'elysia'
 import { GenToken, checkState } from '$lib/auth'
-import db from '@DB/clickhouse'
+import db from '@DB/orm'
 import mailer from '$lib/mailer'
 import pushLogs from '$lib/logs'
-
-import type { User } from '$Types/user'
-
+import { randomString, randomInt } from '$lib/random'
 const route = new Elysia({ prefix: '/auth' })
 	.post(
 		'/sign-up',
@@ -28,59 +26,38 @@ const route = new Elysia({ prefix: '/auth' })
 				const newUsername = `@${username.toLowerCase().replaceAll(' ', '')}`
 
 				const [existingUsername, existingEmail] = await Promise.all([
-					db
-						.query({
-							query: `SELECT username, is_email_verified FROM users WHERE username = {username:String}`,
-							query_params: {
-								username: newUsername
-							},
-							format: 'JSONEachRow'
-						})
-						.then(response => response.json()) as unknown as User[],
-					db
-						.query({
-							query: `SELECT email, is_email_verified FROM users WHERE email = {email:String}`,
-							query_params: {
-								email: email.toLowerCase().replaceAll(' ', '')
-							},
-							format: 'JSONEachRow'
-						})
-						.then(response => response.json()) as unknown as User[]
+					db.findMany({
+						tables: ['users'],
+						where: { users: { username: newUsername } },
+						select: { users: ['is_email_verified'] }
+					}),
+					db.findMany({
+						tables: ['users'],
+						where: { users: { email: email.toLowerCase().replaceAll(' ', '') } },
+						select: { users: ['is_email_verified'] }
+					})
 				])
 
 				if (
-					existingUsername[0]?.username.toLowerCase() === newUsername &&
-					existingUsername[0]?.is_email_verified
+					existingUsername?.users?.some(user => user.is_email_verified) ||
+					existingEmail.users?.some(user => user.is_email_verified)
 				) {
 					set.status = 409
 					return { err: 'Username or Email already exists' }
 				}
 
-				if (existingEmail[0]?.email === email && existingEmail[0]?.is_email_verified) {
-					set.status = 409
-					return { err: 'Username or Email already exists' }
-				}
-
-				if (
-					existingUsername[0]?.username.toLowerCase() === newUsername &&
-					!existingUsername[0]?.is_email_verified
-				) {
-					await db.command({
-						query: `ALTER TABLE users DELETE WHERE username = {username:String}`,
-						query_params: {
-							username
-						}
+				if (existingUsername?.users?.length > 1) {
+					await db.deleteMany({
+						tables: ['users'],
+						where: { users: { username: newUsername, is_email_verified: false } }
 					})
 				}
 
-				if (
-					existingEmail[0]?.email.toLowerCase() === email.toLowerCase() &&
-					!existingEmail[0]?.is_email_verified
-				) {
-					await db.command({
-						query: `ALTER TABLE users DELETE WHERE email = {email:String}`,
-						query_params: {
-							email
+				if (existingEmail?.users?.length > 1) {
+					await db.deleteMany({
+						tables: ['users'],
+						where: {
+							users: { email: email.toLowerCase().replaceAll(' ', ''), is_email_verified: false }
 						}
 					})
 				}
@@ -89,18 +66,27 @@ const route = new Elysia({ prefix: '/auth' })
 
 				const token = GenToken({ username: newUsername, password: hash }, '1h')
 
-				await db.insert({
+				await db.create({
 					table: 'users',
-					values: [
-						{
-							username: newUsername,
-							password: hash,
-							name,
-							email,
-							verification_token: token
-						}
-					],
-					format: 'JSONEachRow'
+					data: {
+						id: randomString(randomInt(10, 85), true, true, true, true, true),
+						username: newUsername,
+						password: hash,
+						name: name as string,
+						email,
+						verification_token: token,
+						followers: 0,
+						level: 'Silent Soul',
+						points: 0,
+						needs: 500,
+						is_email_verified: false,
+						only_visible_to: 'everyone',
+						role: 'User',
+						verified: false,
+						profile_picture: '',
+						banner: '',
+						joined: new Date()
+					}
 				})
 
 				const mail = await mailer.emails.send({
@@ -170,42 +156,32 @@ const route = new Elysia({ prefix: '/auth' })
 			try {
 				const { email, password } = body
 
-				const res = await db.query({
-					query: `SELECT username, email, password FROM users WHERE email = {email:String}`,
-					query_params: {
-						email: email.toLowerCase().replaceAll(' ', '')
-					},
-					format: 'JSONEachRow'
+				const user = await db.findUnique({
+					table: 'users',
+					where: { email: email.toLowerCase().replaceAll(' ', '') },
+					select: ['username', 'email', 'password', 'name']
 				})
 
-				const user = (await res.json()) as unknown as User[]
-
-				if (user.length > 0) {
-					const match = await Bun.password.verify(password, user[0]?.password, 'bcrypt')
+				if (user) {
+					const match = await Bun.password.verify(password, user.password, 'bcrypt')
 
 					if (match) {
-						const token = GenToken(
-							{ username: user[0]?.username, password: user[0]?.password },
-							'1h'
-						)
+						const token = GenToken({ username: user.username, password: user.password }, '1h')
 
-						await db.command({
-							query: `ALTER TABLE users UPDATE verification_token = {verification_token:String} WHERE email = {email:String}`,
-							query_params: {
-								verification_token: token,
-								email: email.toLowerCase().replaceAll(' ', '')
-							}
+						await db.update({
+							table: 'users',
+							data: { verification_token: token },
+							where: { email: email.toLowerCase().replaceAll(' ', '') }
 						})
 
 						await mailer.emails.send({
 							from: `Tech Gunner Industries <onboarding@resend.dev>`,
-							to: user[0].email,
+							to: user.email,
 							subject: 'Tech Gunner - Security Alert: Suspicious Login Attempt Detected',
 							html: `
-  
 							<div style="max-width: 600px; margin: 0 auto; padding: 20px; background: #09132d; color: #fff; font-family: Arial, sans-serif; border-radius: .8rem;">
 								<img src="https://techgunner.com/text-logo.png" width="500px" alt="Tech Gunner Logo" style="margin: 0 auto;">
-								<h1 style="text-align: center;">Hello, ${user[0]?.name}!</h1>
+								<h1 style="text-align: center;">Hello, ${user.name}!</h1>
 								<p>We've detected a suspicious login attempt on your Tech Gunner account.</p>
 								<p>If this was you, please confirm the action by clicking the button below:</p>
 								<div style="text-align: center; margin-top: 20px;">
@@ -221,7 +197,7 @@ const route = new Elysia({ prefix: '/auth' })
 							</div>
 `,
 							text: `
-							Hello, ${user[0]?.name}!
+							Hello, ${user.name}!
 											
 							We've detected a suspicious login attempt on your Tech Gunner account.
 											
@@ -263,36 +239,31 @@ const route = new Elysia({ prefix: '/auth' })
 			try {
 				const token = checkState(query.token)
 				if (token?.username) {
-					const res = await db.query({
-						query: `SELECT username, verification_token, password FROM users WHERE username = {username:String}`,
-						query_params: {
-							username: token.username
-						},
-						format: 'JSONEachRow'
+					const user = await db.findUnique({
+						table: 'users',
+						where: { username: token.username },
+						select: ['username', 'verification_token', 'password']
 					})
 
-					const user = (await res.json()) as unknown as User[]
-					if (query.token === user[0]?.verification_token) {
-						if (user.length > 0) {
-							const matchUsername = checkState(query.token, user[0]?.username)
+					if (user) {
+						if (query.token === user.verification_token) {
+							const matchUsername = checkState(query.token, user.username)
 
 							if (matchUsername?.state === 'Owner') {
 								const newToken = GenToken(
-									{ username: user[0]?.username, password: user[0]?.password },
+									{ username: user.username, password: user.password },
 									'365d'
 								)
-								await db.command({
-									query: `ALTER TABLE users UPDATE is_email_verified = {is_email_verified:Bool} WHERE username = {username:String}`,
-									query_params: {
-										is_email_verified: true,
-										username: user[0]?.username
-									}
+								await db.update({
+									table: 'users',
+									data: { is_email_verified: true },
+									where: { username: user.username }
 								})
 								console.log('verified')
 
 								set.status = 201
 
-								return { token: newToken, username: user[0]?.username }
+								return { token: newToken, username: user.username }
 							}
 						} else {
 							set.status = 'Unauthorized'

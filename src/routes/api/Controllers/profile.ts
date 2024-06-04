@@ -1,7 +1,6 @@
 import { Elysia, t } from 'elysia'
 import { GenToken, checkState } from '$lib/auth'
-import db from '@DB/clickhouse'
-import type { User } from '$Types/user'
+import db from '@DB/orm'
 import pushLogs from '$lib/logs'
 
 const route = new Elysia({ prefix: '/profile/:username' })
@@ -9,37 +8,31 @@ const route = new Elysia({ prefix: '/profile/:username' })
 		try {
 			const { username } = params
 
-			const user = (await db
-				.query({
-					query: `SELECT
-				username,
-				name,
-				bio,
-				profile_picture,
-				banner,
-				level,
-				role,
-				points,
-				needs,
-				links,
-				verified,
-				skills,
-				language,
-				team,
-				is_email_verified,
-				joined
-			 FROM users WHERE username = {username:String}`,
-					query_params: {
-						username
-					},
-					format: 'JSONEachRow'
-				})
-				.then(res => res.json())) as unknown as User[]
+			const user = await db.findUnique({
+				table: 'users',
+				where: { username },
+				select: [
+					'username',
+					'name',
+					'bio',
+					'profile_picture',
+					'banner',
+					'level',
+					'role',
+					'points',
+					'needs',
+					'links',
+					'verified',
+					'skills',
+					'languages',
+					'team',
+					'is_email_verified',
+					'joined'
+				]
+			})
 
-			if (user.length > 0 && user[0]?.is_email_verified) {
-				return {
-					user: user[0]
-				}
+			if (user && user.is_email_verified) {
+				return { user }
 			} else {
 				set.status = 404
 				return { err: 'User not found' }
@@ -62,34 +55,24 @@ const route = new Elysia({ prefix: '/profile/:username' })
 				if (token?.state === 'Owner') {
 					const hash = await Bun.password.hash(password, { algorithm: 'bcrypt', cost: 10 })
 
-					const user = await db.command({
-						query: `ALERT TABLE users UPDATE
-						username = {newUsername:String},
-						password = {password:String},
-						name = {name:String},
-                        bio = {bio:String},
-                        links = {links:Array(String)},
-                        skills = {skills:Array(String)},
-                        language = {languages:Array(String)},
-						email = {email:String}
-						WHERE username = {username:String}
-						`,
-						query_params: {
-							newUsername,
+					await db.update({
+						table: 'users',
+						data: {
+							username: newUsername,
 							password: hash,
 							name,
-							email,
 							bio,
 							links,
 							skills,
-							languages,
-							username
-						}
+							language: languages,
+							email
+						},
+						where: { username }
 					})
 
 					const token = GenToken({ username, password }, '365d')
 
-					return { user, token }
+					return { token }
 				} else {
 					set.status = 401
 					return { err: 'You are not authorized to update this profile' }
@@ -129,26 +112,22 @@ const route = new Elysia({ prefix: '/profile/:username' })
 				const { username } = params
 				const { password } = body
 				const token = await checkState(body.auth, username)
-				if (token?.state === 'Owner') {
-					const user = (await db
-						.query({
-							query: `SELECT password FROM users WHERE username = {username:String}`,
-							query_params: {
-								username
-							},
-							format: 'JSONEachRow'
-						})
-						.then(result => result.json())) as User[]
 
-					if (user.length > 0) {
-						const correct = await Bun.password.verify(password, user[0].password, 'bcrypt')
+				if (token?.state === 'Owner') {
+					const user = await db.findUnique({
+						table: 'users',
+						where: { username },
+						select: ['password']
+					})
+
+					if (user) {
+						const correct = await Bun.password.verify(password, user.password, 'bcrypt')
 						if (correct) {
-							await db.command({
-								query: `DELETE FROM users WHERE username = {username:String}`,
-								query_params: {
-									username
-								}
+							await db.delete({
+								table: 'users',
+								where: { username }
 							})
+							set.status = 204
 						} else {
 							set.status = 401
 							return { err: 'Wrong password' }
@@ -177,22 +156,13 @@ const route = new Elysia({ prefix: '/profile/:username' })
 		try {
 			const { username } = params
 
-			const blogs = await db
-				.query({
-					query: `SELECT 
-				id,
-				title,
-				cover,
-				views,
-				published_at FROM blogs WHERE author = {username:String}`,
-					query_params: {
-						username
-					},
-					format: 'JSONEachRow'
-				})
-				.then(res => res.json())
+			const blogs = await db.findMany({
+				tables: ['blogs'],
+				where: { blogs:{ author: username }},
+				select: { blogs: ['id', 'title', 'cover', 'views', 'published_at'] }
+			})
 
-			if (blogs.length === 0) {
+			if (blogs.blogs?.length === 0) {
 				return { err: `${username} hasn't uploaded any Blog Posts` }
 			} else {
 				return { blogs }
