@@ -68,5 +68,45 @@ const route = new Elysia({ prefix: '/user' })
 			})
 		}
 	)
+	.post(
+		'/checktoken',
+		async ({ headers, set, body }) => {
+			try {
+				const isCorrect = checkState(headers.Authorization.replace('Bearer ', ''), body?.username)
+				if (isCorrect?.state === 'LoggedIn' || isCorrect?.state === 'Owner') {
+					const doUserExist = await db.findMany({
+						tables: ['users'],
+						where: { users: { username: isCorrect.username } },
+						select: { users: ['is_email_verified'] }
+					})
+
+					if (doUserExist?.users.length > 0 && doUserExist?.users[0]?.is_email_verified) {
+						return isCorrect
+					} else {
+						set.status = 400
+						return { err: 'User does not exist' }
+					}
+				} else {
+					set.status = 400
+					return { err: 'Please login' }
+				}
+			} catch (e) {
+				set.status = 500
+				console.error(`Error checking token: ${e}`)
+				pushLogs(`Error checking token: ${e}`)
+				return { err: "Something went wrong on our server, We'll try to fix it ASAP!" }
+			}
+		},
+		{
+			headers: t.Object({
+				Authorization: t.String()
+			}),
+			body: t.Optional(
+				t.Object({
+					username: t.String()
+				})
+			)
+		}
+	)
 
 export default route
