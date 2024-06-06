@@ -22,31 +22,31 @@ async function createTopics() {
 					numPartitions: 1,
 					replicationFactor: -1
 				},
-                {
+				{
 					topic: 'likes',
 					numPartitions: 1,
-                    replicationFactor: -1
+					replicationFactor: -1
 				},
 				{
-                    topic: 'dislikes',
-                    numPartitions: 1,
-                    replicationFactor: -1
-                },
-                {
-                    topic: 'comments',
-                    numPartitions: 1,
-                    replicationFactor: -1
-                },
-                {
-                    topic:'analytics',
-                    numPartitions: 1,
-                    replicationFactor: -1
-                },
-                {
-                    topic: 'notifications',
-                    numPartitions: 1,
-                    replicationFactor: -1
-                }
+					topic: 'dislikes',
+					numPartitions: 1,
+					replicationFactor: -1
+				},
+				{
+					topic: 'comments',
+					numPartitions: 1,
+					replicationFactor: -1
+				},
+				{
+					topic: 'analytics',
+					numPartitions: 1,
+					replicationFactor: -1
+				},
+				{
+					topic: 'notifications',
+					numPartitions: 1,
+					replicationFactor: -1
+				}
 			]
 		})
 		console.log('Topics created successfully !!!')

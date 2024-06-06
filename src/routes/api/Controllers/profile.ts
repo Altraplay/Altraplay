@@ -158,7 +158,7 @@ const route = new Elysia({ prefix: '/profile/:username' })
 
 			const blogs = await db.findMany({
 				tables: ['blogs'],
-				where: { blogs:{ author: username }},
+				where: { blogs: { author: username } },
 				select: { blogs: ['id', 'title', 'cover', 'views', 'published_at'] }
 			})
 
