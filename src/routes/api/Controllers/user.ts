@@ -123,5 +123,25 @@ const route = new Elysia({ prefix: '/user' })
 			return { err: "Something went wrong on our server, We'll try to fix it ASAP!" }
 		}
 	})
+	.get('/leaderboard', async ({ set }) => {
+		try {
+			const users = await db.findMany({
+				tables: ['users'],
+				select: { users: ['username', 'name', 'profile_picture', 'points', 'is_email_verified'] }
+			})
+			return users.users
+				?.filter(user => user.points > 0 && user.is_email_verified)
+				.map(user => {
+					{
+						user.name, user.profile_picture, user.username, user.points
+					}
+				})
+		} catch (e) {
+			set.status = 500
+			console.error(`Error retrieving the leaderboard: ${e}`)
+			pushLogs(`Error retrieving the leaderboard: ${e}`)
+			return { err: "Something went wrong on our server, We'll try to fix it ASAP!" }
+		}
+	})
 
 export default route
