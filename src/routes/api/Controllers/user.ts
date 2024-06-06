@@ -2,7 +2,6 @@ import { Elysia, t } from 'elysia'
 import { checkState } from '$lib/auth'
 import db from '@DB/orm'
 import pushLogs from '$lib/logs'
-import type { User } from '$Types/user'
 
 const route = new Elysia({ prefix: '/user' })
 	.post(
@@ -40,13 +39,15 @@ const route = new Elysia({ prefix: '/user' })
 					]
 
 					for (const name of tryUsernames) {
-						const user = (await db.findMany({
-							tables: ['users'],
-							where: { users: { username: name } },
-							select: { users: ['username', 'is_email_verified'] }
-						})) as User[]
+						const user = (
+							await db.findMany({
+								tables: ['users'],
+								where: { users: { username: name } },
+								select: { users: ['username', 'is_email_verified'] }
+							})
+						).users
 
-						if (user.some(user => user?.is_email_verified)) {
+						if (user?.some(user => user?.is_email_verified)) {
 							tryUsernames.splice(tryUsernames.indexOf(name), 1)
 						}
 					}
@@ -108,5 +109,19 @@ const route = new Elysia({ prefix: '/user' })
 			)
 		}
 	)
+	.get('/count', async ({ set }) => {
+		try {
+			const usersCount = await db.findMany({
+				tables: ['users'],
+				select: { users: ['username'] }
+			})
+			return usersCount.users?.length
+		} catch (e) {
+			set.status = 500
+			console.error(`Error counting users ${e}`)
+			pushLogs(`Error counting users ${e}`)
+			return { err: "Something went wrong on our server, We'll try to fix it ASAP!" }
+		}
+	})
 
 export default route
