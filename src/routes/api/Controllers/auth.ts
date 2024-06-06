@@ -89,12 +89,12 @@ const route = new Elysia({ prefix: '/auth' })
 					}
 				})
 
-				const mail = await mailer.emails.send({
-					from: `Tech Gunner Industries <onboarding@resend.dev>`,
+				await mailer.emails.send({
+					from: 'Tech Gunner Industries <onboarding@resend.dev>',
 					to: email,
-					subject: 'Tech Gunner - Complete Sign up',
+					subject: `Verify your email ${name}! - Tech Gunner`,
 					html: `
-					<div style="max-width: 600px; margin: 0 auto; padding: 20px; background: #09132d; color: #fff; font-family: Arial, sans-serif; border-radius: .8rem;">
+					<div style="max-width: 600px; margin: 0 auto; padding: 20px; background: #09132d; color: #fff !important; font-family: Arial, sans-serif; border-radius: .8rem;">
 					<img src="https://techgunner.com/text-logo.png" width="500px" alt="Tech Gunner Logo" style="margin: 0 auto;">
 						<h1 style="text-align: center;">Hi, ${name}!</h1>
 						<p>Thank you for signing up for Tech Gunner</p>
@@ -102,8 +102,8 @@ const route = new Elysia({ prefix: '/auth' })
 						<div style="text-align: center; margin-top: 20px;">
 							<a href="${Bun.env.DOMAIN}/verify?token=${token}" style="display: inline-block; padding: 6px 20px; background-color: #0effbd; color: #09132d; text-decoration: none; border-radius: 5px; font-weight: bold;">Verify Email</a>
 						</div>
-						<p style="margin-top: 20px;">If you didn't created this account then please ignore this email. The verification link will automatically expire in 1 hour</p>
-						<p>Receiving too many emails? Let us know by reporting it by <a href="${Bun.env.DOMAIN}/report" style="color: #fff;">clicking here.</a></p>
+						<p style="margin-top: 20px;">If you didn't created this account then just ignore this email. The verification link will automatically expire in 1 hour</p>
+						<p>Receiving too many emails? Let us know by reporting it by <a href="${Bun.env.DOMAIN}/report" style="color: #fff; text-decoration: underline;">clicking here.</a></p>
 						<p style="margin-top: 20px;">Best Regards,<br/>Tech Gunner Industries &copy;</p>
 					</div>
 					`,
@@ -115,7 +115,7 @@ const route = new Elysia({ prefix: '/auth' })
 
 					${Bun.env.DOMAIN}/verify?token=${token}
 					
-					If you didn't create this account then please ignore this email. The verification link will automatically expire in 1 hour
+					If you didn't create this account then just ignore this email. The verification link will automatically expire in 1 hour
 
 					Receiving too many emails? Let us know by reporting it by clicking the link below.
 					${Bun.env.DOMAIN}/report
@@ -124,7 +124,6 @@ const route = new Elysia({ prefix: '/auth' })
                     Tech Gunner Industries ©
                     `
 				})
-				console.log(JSON.stringify(mail))
 				set.status = 204
 			} catch (e) {
 				set.status = 500
