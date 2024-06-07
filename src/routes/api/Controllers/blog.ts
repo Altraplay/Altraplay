@@ -222,5 +222,41 @@ const route = new Elysia({ prefix: '/blog' })
 		},
 		bodySchema
 	)
+	.delete(
+		'/:id',
+		async ({ params, set, headers }) => {
+			try {
+				const check = await db.findUnique({
+					table: 'blogs',
+					where: { id: params.id },
+					select: ['author', 'cover']
+				})
+				const token = checkState(headers.Authorization, check?.author)
+				if (token?.state === 'Owner') {
+					await s3Client.send(
+						new DeleteObjectCommand({
+							Bucket: 'tg-blog-images',
+							Key: check?.cover
+						})
+					)
+					await db.delete({
+						table: 'blogs',
+						where: { id: params.id }
+					})
+					set.status = 204
+				} else {
+					set.status = 401
+					return { err: 'You are not authorized to delete this blog' }
+				}
+			} catch (e) {
+				set.status = 500
+			}
+		},
+		{
+			headers: t.Object({
+				Authorization: t.String()
+			})
+		}
+	)
 
 export default route
