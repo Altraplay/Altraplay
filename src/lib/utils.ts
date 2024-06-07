@@ -8,4 +8,53 @@ function abbreviateNumber(value: number) {
 	return abbreviatedNumber + unit
 }
 
-export { abbreviateNumber }
+function formatTime(date: Date) {
+	const currentDate = new Date()
+	const targetDate = new Date(date.getTime())
+
+	const difference = targetDate.getTime() - currentDate.getTime()
+
+	const seconds = difference / 1000
+	const minutes = seconds / 60
+	const hours = minutes / 60
+	const days = hours / 24
+
+	const currentYear = currentDate.getUTCFullYear()
+	const currentMonth = currentDate.getUTCMonth()
+	const currentDay = currentDate.getUTCDate()
+
+	const targetYear = targetDate.getUTCFullYear()
+	const targetMonth = targetDate.getUTCMonth()
+	const targetDay = targetDate.getUTCDate()
+
+	const yearDifference = targetYear - currentYear
+	const monthDifference = targetMonth - currentMonth + yearDifference * 12
+	const dayDifference = targetDay - currentDay
+
+	const preciseMonths = monthDifference + dayDifference / 30
+	const preciseYears = yearDifference + monthDifference / 12
+
+	const roundedMonths = Math.round(preciseMonths * 10) / 10
+	const roundedYears = Math.round(preciseYears * 10) / 10
+
+	const relativeTimeFormatter = new Intl.RelativeTimeFormat(undefined, {
+		numeric: 'auto',
+		style: 'long'
+	})
+
+	if (Math.abs(roundedYears) >= 1) {
+		return relativeTimeFormatter.format(roundedYears, 'year')
+	} else if (Math.abs(roundedMonths) >= 1) {
+		return relativeTimeFormatter.format(roundedMonths, 'month')
+	} else if (Math.abs(days) >= 1) {
+		return relativeTimeFormatter.format(Math.round(days), 'day')
+	} else if (Math.abs(hours) >= 1) {
+		return relativeTimeFormatter.format(Math.round(hours), 'hour')
+	} else if (Math.abs(minutes) >= 1) {
+		return relativeTimeFormatter.format(Math.round(minutes), 'minute')
+	} else {
+		return relativeTimeFormatter.format(Math.round(seconds), 'second')
+	}
+}
+
+export { abbreviateNumber, formatTime }
