@@ -5,6 +5,7 @@ import { randomString, randomInt } from '$lib/random'
 
 async function pushLogs(logs: string) {
 	try {
+		console.error(logs)
 		const producer = kafka.producer({ createPartitioner: Partitioners.DefaultPartitioner })
 		await producer.connect()
 		await producer.send({

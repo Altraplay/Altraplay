@@ -39,7 +39,6 @@ const route = new Elysia({ prefix: '/profile/:username' })
 			}
 		} catch (e) {
 			set.status = 500
-			console.error(`Failed to retrieve user's profile: ${e}`)
 			pushLogs(`Failed to retrieve user's profile: ${e}`)
 			return { err: "Something went wrong on our server, We'll try to fix it ASAP!" }
 		}
@@ -79,7 +78,6 @@ const route = new Elysia({ prefix: '/profile/:username' })
 				}
 			} catch (e) {
 				set.status = 500
-				console.error(`Error updating profile: ${e}`)
 				pushLogs(`Error updating profile: ${e}`)
 				return { err: "Something went wrong on our server, We'll try to fix it ASAP!" }
 			}
@@ -142,7 +140,6 @@ const route = new Elysia({ prefix: '/profile/:username' })
 				}
 			} catch (e) {
 				set.status = 500
-				console.error(`Failed to delete profile: ${e}`)
 				pushLogs(`Failed to delete profile: ${e}`)
 				return { err: "Something went wrong on our server, We'll try to fix it ASAP!" }
 			}
@@ -169,7 +166,6 @@ const route = new Elysia({ prefix: '/profile/:username' })
 			}
 		} catch (e) {
 			set.status = 500
-			console.error(`Error retrieving blogs published by user: ${e}`)
 			pushLogs(`Error retrieving blogs published by user: ${e}`)
 			return { err: "Something went wrong on our server, We'll try to fix it ASAP!" }
 		}

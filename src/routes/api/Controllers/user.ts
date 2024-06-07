@@ -57,7 +57,6 @@ const route = new Elysia({ prefix: '/user' })
 				}
 			} catch (e) {
 				set.status = 500
-				console.error('Error checking availability for username and email:' + e)
 				pushLogs(`Error checking availability for username and email: ${e}`)
 				return { err: "Something went wrong on our server, We'll try to fix it ASAP!" }
 			}
@@ -93,7 +92,6 @@ const route = new Elysia({ prefix: '/user' })
 				}
 			} catch (e) {
 				set.status = 500
-				console.error(`Error checking token: ${e}`)
 				pushLogs(`Error checking token: ${e}`)
 				return { err: "Something went wrong on our server, We'll try to fix it ASAP!" }
 			}
@@ -118,7 +116,6 @@ const route = new Elysia({ prefix: '/user' })
 			return usersCount.users?.length
 		} catch (e) {
 			set.status = 500
-			console.error(`Error counting users ${e}`)
 			pushLogs(`Error counting users ${e}`)
 			return { err: "Something went wrong on our server, We'll try to fix it ASAP!" }
 		}
@@ -138,7 +135,6 @@ const route = new Elysia({ prefix: '/user' })
 				})
 		} catch (e) {
 			set.status = 500
-			console.error(`Error retrieving the leaderboard: ${e}`)
 			pushLogs(`Error retrieving the leaderboard: ${e}`)
 			return { err: "Something went wrong on our server, We'll try to fix it ASAP!" }
 		}

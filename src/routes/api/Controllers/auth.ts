@@ -127,7 +127,6 @@ const route = new Elysia({ prefix: '/auth' })
 				set.status = 204
 			} catch (e) {
 				set.status = 500
-				console.error('Error while registering the user', e)
 				pushLogs(`Error while registering the user: ${e}`)
 				return { err: "Something went wrong on our server, We'll try to fix it ASAP!" }
 			}
@@ -225,7 +224,6 @@ const route = new Elysia({ prefix: '/auth' })
 				}
 			} catch (e) {
 				set.status = 500
-				console.error('An error occurred while logging in the user', e)
 				pushLogs(`An error occurred while logging in the user: ${e}`)
 				return { err: "Something went wrong on our server, We'll try to fix it ASAP!" }
 			}
@@ -258,7 +256,6 @@ const route = new Elysia({ prefix: '/auth' })
 									data: { is_email_verified: true },
 									where: { username: user.username }
 								})
-								console.log('verified')
 
 								set.status = 201
 
@@ -278,7 +275,6 @@ const route = new Elysia({ prefix: '/auth' })
 				}
 			} catch (e) {
 				set.status = 500
-				console.error('Something went wrong while verifying the user:', e)
 				pushLogs(`Something went wrong while verifying the user: ${e}`)
 				return { err: "Something went wrong on our server, We'll try to fix it ASAP!" }
 			}
