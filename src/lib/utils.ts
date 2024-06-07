@@ -56,5 +56,8 @@ function formatTime(date: Date) {
 		return relativeTimeFormatter.format(Math.round(seconds), 'second')
 	}
 }
+function removeHtmlTags(text: string): string {
+	return text.replace(/<[^>]*>?/gm, '')
+}
 
-export { abbreviateNumber, formatTime }
+export { abbreviateNumber, formatTime, removeHtmlTags }
