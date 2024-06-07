@@ -1,3 +1,9 @@
+import sharp, { type FormatEnum } from 'sharp'
+import s3Client from './S3'
+import { PutObjectCommand } from '@aws-sdk/client-s3'
+import { randomInt, randomString } from './random'
+import pushLogs from './logs'
+
 function abbreviateNumber(value: number) {
 	const units = ['', 'K', 'M', 'B', 'T', 'Q', 'QQ']
 	const magnitude = Math.floor(Math.log10(Math.abs(value)) / 3)
@@ -60,4 +66,37 @@ function removeHtmlTags(text: string): string {
 	return text.replace(/<[^>]*>?/gm, '')
 }
 
-export { abbreviateNumber, formatTime, removeHtmlTags }
+const optimizeImage = async (
+	file: Buffer | ArrayBuffer,
+	bucketName: string,
+	size: string,
+	customName?: string
+) => {
+	try {
+		const formats = ['avif', 'webp']
+		const fileName = customName || randomString(randomInt(5, 60))
+
+		for (const format of formats) {
+			const optimizedImageBuffer = await sharp(file)
+				.resize(+size.split('x')[0], +size.split('x')[1])
+				.toFormat(format as keyof FormatEnum)
+				.toBuffer()
+
+			if (Bun.env.AWS_SECRET_ACCESS_KEY) {
+				await s3Client.send(
+					new PutObjectCommand({
+						Bucket: bucketName,
+						Key: `${fileName}.${format}`,
+						Body: optimizedImageBuffer,
+						ContentType: `image/${format}`
+					})
+				)
+			} else Bun.write(`../../static/${fileName}.${format}`, optimizedImageBuffer)
+		}
+		return fileName
+	} catch (error) {
+		pushLogs(`Error optimizing or uploading image: ${error}`)
+	}
+}
+
+export { abbreviateNumber, formatTime, removeHtmlTags, optimizeImage }
