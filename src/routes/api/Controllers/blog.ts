@@ -4,7 +4,7 @@ import db from '@DB/orm'
 import pushLogs from '$lib/logs'
 import { randomString, randomInt } from '$lib/random'
 import s3Client from '$lib/S3'
-import { PutObjectCommand } from '@aws-sdk/client-s3'
+import { DeleteObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3'
 
 const bodySchema = {
 	body: t.Object({
@@ -167,6 +167,60 @@ const route = new Elysia({ prefix: '/blog' })
 				})
 			)
 		}
+	)
+	.put(
+		'/:id',
+		async ({ params, body, set, headers }) => {
+			try {
+				const check = await db.findUnique({
+					table: 'blogs',
+					where: { id: params.id },
+					select: ['author', 'cover']
+				})
+
+				const token = checkState(headers.Authorization, check?.author)
+
+				if (token?.state === 'Owner') {
+					const { title, content, tags, categories, visible_to, cover } = body
+					const coverUrl = `${randomString(randomInt(20, 52))}.${cover.name.split('.')[1]}`
+					if (cover) {
+						if (Bun.env.AWS_SECRET_ACCESS_KEY) {
+							await Promise.all([
+								s3Client.send(
+									new DeleteObjectCommand({
+										Bucket: 'tg-blog-images',
+										Key: check?.cover
+									})
+								),
+								s3Client.send(
+									new PutObjectCommand({
+										Bucket: 'tg-blog-images',
+										Key: coverUrl,
+										Body: cover,
+										ContentType: cover.type
+									})
+								)
+							])
+						} else Bun.write(`../../../../static/${coverUrl}`, cover)
+					}
+					await db.update({
+						table: 'blogs',
+						where: { id: params.id },
+						data: { title, content, tags, categories, visible_to, cover: coverUrl }
+					})
+
+					set.status = 204
+				} else {
+					set.status = 401
+					return { err: 'You are not authorized to update this blog' }
+				}
+			} catch (e) {
+				set.status = 500
+				pushLogs(`Error updating blog id: ${params.id}, error: ${e}`)
+				return { err: "Something went wrong on our server, We'll try to fix it ASAP!" }
+			}
+		},
+		bodySchema
 	)
 
 export default route
