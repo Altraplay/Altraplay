@@ -131,5 +131,42 @@ const route = new Elysia({ prefix: '/blog' })
 			)
 		}
 	)
+	.get(
+		'/:id',
+		async ({ params, set, headers }) => {
+			try {
+				const blog = await db.findUnique({
+					table: 'blogs',
+					where: {
+						id: params.id,
+						visible_to: checkState(headers.Authorization)?.username || 'everyone'
+					}
+				})
+				const author = await db.findUnique({
+					table: 'users',
+					where: {
+						username: blog?.author,
+						is_email_verified: true
+					},
+					select: ['username', 'name', 'profile_picture', 'verified', 'followers']
+				})
+				if (!blog) {
+					set.status = 404
+					return { err: "This Blog doesn't exist" }
+				} else return { ...blog, author }
+			} catch (e) {
+				set.status = 500
+				pushLogs(`Error fetching blog by id: ${params.id}, error: ${e}`)
+				return { err: "Something went wrong on our server, We'll try to fix it ASAP!" }
+			}
+		},
+		{
+			headers: t.Optional(
+				t.Object({
+					Authorization: t.String()
+				})
+			)
+		}
+	)
 
 export default route
