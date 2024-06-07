@@ -2,6 +2,7 @@ import { Elysia, t } from 'elysia'
 import { GenToken, checkState } from '$lib/auth'
 import db from '@DB/orm'
 import pushLogs from '$lib/logs'
+import { serverErr } from '$lib/constant'
 
 const route = new Elysia({ prefix: '/profile/:username' })
 	.get('/', async ({ params, set }) => {
@@ -40,7 +41,7 @@ const route = new Elysia({ prefix: '/profile/:username' })
 		} catch (e) {
 			set.status = 500
 			pushLogs(`Failed to retrieve user's profile: ${e}`)
-			return { err: "Something went wrong on our server, We'll try to fix it ASAP!" }
+			return { err: serverErr }
 		}
 	})
 	.put(
@@ -79,7 +80,7 @@ const route = new Elysia({ prefix: '/profile/:username' })
 			} catch (e) {
 				set.status = 500
 				pushLogs(`Error updating profile: ${e}`)
-				return { err: "Something went wrong on our server, We'll try to fix it ASAP!" }
+				return { err: serverErr }
 			}
 		},
 		{
@@ -141,7 +142,7 @@ const route = new Elysia({ prefix: '/profile/:username' })
 			} catch (e) {
 				set.status = 500
 				pushLogs(`Failed to delete profile: ${e}`)
-				return { err: "Something went wrong on our server, We'll try to fix it ASAP!" }
+				return { err: serverErr }
 			}
 		},
 		{
@@ -167,7 +168,7 @@ const route = new Elysia({ prefix: '/profile/:username' })
 		} catch (e) {
 			set.status = 500
 			pushLogs(`Error retrieving blogs published by user: ${e}`)
-			return { err: "Something went wrong on our server, We'll try to fix it ASAP!" }
+			return { err: serverErr }
 		}
 	})
 

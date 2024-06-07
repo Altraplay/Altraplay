@@ -65,4 +65,6 @@ const Genres = [
 	'Gaming'
 ]
 
-export { Genres }
+const serverErr = "Something went wrong on our server, We'll try to fix it ASAP!"
+
+export { Genres, serverErr }

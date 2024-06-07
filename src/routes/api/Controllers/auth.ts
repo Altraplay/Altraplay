@@ -4,6 +4,8 @@ import db from '@DB/orm'
 import mailer from '$lib/mailer'
 import pushLogs from '$lib/logs'
 import { randomString, randomInt } from '$lib/random'
+import { serverErr } from '$lib/constant'
+
 const route = new Elysia({ prefix: '/auth' })
 	.post(
 		'/sign-up',
@@ -128,7 +130,7 @@ const route = new Elysia({ prefix: '/auth' })
 			} catch (e) {
 				set.status = 500
 				pushLogs(`Error while registering the user: ${e}`)
-				return { err: "Something went wrong on our server, We'll try to fix it ASAP!" }
+				return { err: serverErr }
 			}
 		},
 		{
@@ -225,7 +227,7 @@ const route = new Elysia({ prefix: '/auth' })
 			} catch (e) {
 				set.status = 500
 				pushLogs(`An error occurred while logging in the user: ${e}`)
-				return { err: "Something went wrong on our server, We'll try to fix it ASAP!" }
+				return { err: serverErr }
 			}
 		},
 		{ body: t.Object({ email: t.String(), password: t.String() }) }
@@ -276,7 +278,7 @@ const route = new Elysia({ prefix: '/auth' })
 			} catch (e) {
 				set.status = 500
 				pushLogs(`Something went wrong while verifying the user: ${e}`)
-				return { err: "Something went wrong on our server, We'll try to fix it ASAP!" }
+				return { err: serverErr }
 			}
 		},
 		{

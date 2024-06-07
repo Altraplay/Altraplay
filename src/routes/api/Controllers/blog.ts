@@ -5,6 +5,7 @@ import pushLogs from '$lib/logs'
 import { randomString, randomInt } from '$lib/random'
 import s3Client from '$lib/S3'
 import { DeleteObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3'
+import { serverErr } from '$lib/constant'
 
 const bodySchema = {
 	body: t.Object({
@@ -84,7 +85,7 @@ const route = new Elysia({ prefix: '/blog' })
 			} catch (e) {
 				set.status = 500
 				pushLogs(`Error publishing blog post: ${e}`)
-				return { err: "Something went wrong on our server, We'll try to fix it ASAP!" }
+				return { err: serverErr }
 			}
 		},
 		bodySchema
@@ -120,7 +121,7 @@ const route = new Elysia({ prefix: '/blog' })
 			} catch (e) {
 				pushLogs(`Failed to retrieve all blog posts ${e}`)
 				set.status = 500
-				return { err: "Something went wrong on our server, We'll try to fix it ASAP!" }
+				return { err: serverErr }
 			}
 		},
 		{
@@ -157,7 +158,7 @@ const route = new Elysia({ prefix: '/blog' })
 			} catch (e) {
 				set.status = 500
 				pushLogs(`Error fetching blog by id: ${params.id}, error: ${e}`)
-				return { err: "Something went wrong on our server, We'll try to fix it ASAP!" }
+				return { err: serverErr }
 			}
 		},
 		{
@@ -217,7 +218,7 @@ const route = new Elysia({ prefix: '/blog' })
 			} catch (e) {
 				set.status = 500
 				pushLogs(`Error updating blog id: ${params.id}, error: ${e}`)
-				return { err: "Something went wrong on our server, We'll try to fix it ASAP!" }
+				return { err: serverErr }
 			}
 		},
 		bodySchema

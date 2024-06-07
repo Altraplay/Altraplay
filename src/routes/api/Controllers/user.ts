@@ -2,6 +2,7 @@ import { Elysia, t } from 'elysia'
 import { checkState } from '$lib/auth'
 import db from '@DB/orm'
 import pushLogs from '$lib/logs'
+import { serverErr } from '$lib/constant'
 
 const route = new Elysia({ prefix: '/user' })
 	.post(
@@ -58,7 +59,7 @@ const route = new Elysia({ prefix: '/user' })
 			} catch (e) {
 				set.status = 500
 				pushLogs(`Error checking availability for username and email: ${e}`)
-				return { err: "Something went wrong on our server, We'll try to fix it ASAP!" }
+				return { err: serverErr }
 			}
 		},
 		{
@@ -93,7 +94,7 @@ const route = new Elysia({ prefix: '/user' })
 			} catch (e) {
 				set.status = 500
 				pushLogs(`Error checking token: ${e}`)
-				return { err: "Something went wrong on our server, We'll try to fix it ASAP!" }
+				return { err: serverErr }
 			}
 		},
 		{
@@ -117,7 +118,7 @@ const route = new Elysia({ prefix: '/user' })
 		} catch (e) {
 			set.status = 500
 			pushLogs(`Error counting users ${e}`)
-			return { err: "Something went wrong on our server, We'll try to fix it ASAP!" }
+			return { err: serverErr }
 		}
 	})
 	.get('/leaderboard', async ({ set }) => {
@@ -136,7 +137,7 @@ const route = new Elysia({ prefix: '/user' })
 		} catch (e) {
 			set.status = 500
 			pushLogs(`Error retrieving the leaderboard: ${e}`)
-			return { err: "Something went wrong on our server, We'll try to fix it ASAP!" }
+			return { err: serverErr }
 		}
 	})
 
