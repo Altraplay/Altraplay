@@ -89,5 +89,47 @@ const route = new Elysia({ prefix: '/blog' })
 		},
 		bodySchema
 	)
+	.get(
+		'/',
+		async ({ set, headers }) => {
+			try {
+				const blogs = await db.findMany({
+					tables: ['blogs'],
+					where: {
+						blogs: { visible_to: checkState(headers?.Authorization)?.username || 'everyone' }
+					},
+					select: {
+						blogs: ['id', 'title', 'author', 'cover', 'published_at']
+					}
+				})
+				const list = blogs.blogs?.map(async blog => {
+					const author = (
+						await db.findMany({
+							tables: ['users'],
+							where: {
+								users: { is_email_verified: true, username: blog.author }
+							},
+							select: {
+								users: ['username', 'name', 'profile_picture', 'verified']
+							}
+						})
+					).users
+					return { ...blog, author }
+				})
+				return list
+			} catch (e) {
+				pushLogs(`Failed to retrieve all blog posts ${e}`)
+				set.status = 500
+				return { err: "Something went wrong on our server, We'll try to fix it ASAP!" }
+			}
+		},
+		{
+			headers: t.Optional(
+				t.Object({
+					Authorization: t.String()
+				})
+			)
+		}
+	)
 
 export default route
