@@ -394,7 +394,12 @@ const route = new Elysia({ prefix: '/blog' })
 							data: {
 								comments: [
 									...blog?.comments,
-									{ msg, who: verify.username, date: new Date(Date.now()) }
+									{
+										id: randomString(randomInt(3, 62)),
+										msg,
+										who: verify.username,
+										date: new Date(Date.now())
+									}
 								]
 							}
 						})
