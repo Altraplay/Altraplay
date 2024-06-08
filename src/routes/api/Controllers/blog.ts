@@ -310,5 +310,69 @@ const route = new Elysia({ prefix: '/blog' })
 			})
 		}
 	)
+	.post(
+		'/:id/dislike',
+		async ({ params, set, headers }) => {
+			try {
+				const verify = checkState(headers.Authorization)
+
+				if (verify?.state === 'LoggedIn') {
+					const blog = await db.findUnique({
+						table: 'blogs',
+						where: { id: params.id },
+						select: ['dislikes']
+					})
+
+					const user = await db.findUnique({
+						table: 'users',
+						where: { username: verify.username },
+						select: ['disliked']
+					})
+
+					if (blog) {
+						if (!user?.disliked?.blogs.some(() => params.id)) {
+							await db.update({
+								table: 'blogs',
+								where: { id: params.id },
+								data: { dislikes: blog.dislikes++ }
+							})
+							await db.update({
+								table: 'users',
+								where: { username: verify.username },
+								data: { disliked: { blogs: [...user?.disliked?.blogs, params.id] } }
+							})
+						} else {
+							await db.update({
+								table: 'blogs',
+								where: { id: params.id },
+								data: { dislikes: blog.dislikes-- }
+							})
+							await db.update({
+								table: 'users',
+								where: { username: verify.username },
+								data: { disliked: { blogs: user.disliked.blogs.filter(id => id !== params.id) } }
+							})
+						}
+						set.status = 204
+					} else {
+						set.status = 404
+						return { err: 'Blog not found' }
+					}
+				} else {
+					set.status = 401
+					return { err: 'Come on now bro u gotta login' }
+				}
+			} catch (err) {
+				set.status = 500
+				pushLogs(`Error disliking blog id: ${params.id}, error: ${err}`)
+				return { err: serverErr }
+			}
+		},
+		{
+			headers: t.Object({
+				Authorization: t.String()
+			})
+		}
+	)
 
 export default route
