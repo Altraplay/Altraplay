@@ -51,8 +51,12 @@ const route = new Elysia({ prefix: '/blog' })
 					})
 
 					if (user) {
-						const coverUrl = await optimizeImage(await cover.arrayBuffer(), 'tg-blog-images', '1600x900')
-						
+						const coverUrl = await optimizeImage(
+							await cover.arrayBuffer(),
+							'tg-blog-images',
+							'1600x900'
+						)
+
 						await db.create({
 							table: 'blogs',
 							data: {
@@ -234,6 +238,70 @@ const route = new Elysia({ prefix: '/blog' })
 				}
 			} catch (e) {
 				set.status = 500
+			}
+		},
+		{
+			headers: t.Object({
+				Authorization: t.String()
+			})
+		}
+	)
+	.post(
+		'/:id/like',
+		async ({ params, set, headers }) => {
+			try {
+				const verify = checkState(headers.Authorization)
+
+				if (verify?.state === 'LoggedIn') {
+					const blog = await db.findUnique({
+						table: 'blogs',
+						where: { id: params.id },
+						select: ['likes']
+					})
+
+					const user = await db.findUnique({
+						table: 'users',
+						where: { username: verify.username },
+						select: ['liked']
+					})
+
+					if (blog) {
+						if (!user?.liked?.blogs.some(() => params.id)) {
+							await db.update({
+								table: 'blogs',
+								where: { id: params.id },
+								data: { likes: blog.likes++ }
+							})
+							await db.update({
+								table: 'users',
+								where: { username: verify.username },
+								data: { liked: { blogs: [...user?.liked?.blogs, params.id] } }
+							})
+						} else {
+							await db.update({
+								table: 'blogs',
+								where: { id: params.id },
+								data: { likes: blog.likes-- }
+							})
+							await db.update({
+								table: 'users',
+								where: { username: verify.username },
+								data: { liked: { blogs: user.liked.blogs.filter(id => id !== params.id) } }
+							})
+						}
+						set.status = 204
+					} else {
+						set.status = 404
+						return { err: 'Blog not found' }
+					}
+				} else {
+					set.status = 401
+					return { err: 'Come on now bro u gotta login' }
+				}
+			} catch (e) {
+				set.status = 500
+				pushLogs(`Error liking blog id: ${params.id}, error: ${e}`)
+				return { err: serverErr }
 			}
 		},
 		{
