@@ -374,5 +374,63 @@ const route = new Elysia({ prefix: '/blog' })
 			})
 		}
 	)
+	.post(
+		'/:id/comment',
+		async ({ params, body, set, headers }) => {
+			try {
+				const verify = checkState(headers.Authorization)
+				if (verify?.state === 'LoggedIn') {
+					const { msg } = body
+
+					const blog = await db.findUnique({
+						table: 'blogs',
+						where: { id: params.id },
+						select: ['comments']
+					})
+					if (blog) {
+						await db.update({
+							table: 'blogs',
+							where: { id: params.id },
+							data: {
+								comments: [
+									...blog?.comments,
+									{ msg, who: verify.username, date: new Date(Date.now()) }
+								]
+							}
+						})
+						await db.create({
+							table: 'history',
+							data: {
+								id: randomString(randomInt(3, 65)),
+								time: new Date(Date.now()),
+								type: 'comment',
+								user: verify.username,
+								visit_url: `/blog/${params.id}`
+							}
+						})
+						set.status = 204
+					} else {
+						set.status = 404
+						return { err: 'Blog not found' }
+					}
+				} else {
+					set.status = 401
+					return { err: 'Come on now bro u gotta login' }
+				}
+			} catch (e) {
+				set.status = 500
+				pushLogs(`Error commenting on a blog id: ${params.id}, error: ${e}`)
+				return { err: serverErr }
+			}
+		},
+		{
+			headers: t.Object({
+				Authorization: t.String()
+			}),
+			body: t.Object({
+				msg: t.String()
+			})
+		}
+	)
 
 export default route
