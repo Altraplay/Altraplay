@@ -192,5 +192,24 @@ const route = new Elysia({ prefix: '/profile/:username' })
 			return { err: serverErr }
 		}
 	})
+	.get('/posts', async ({ params, set }) => {
+		const { username } = params
+		try {
+			const { posts } = await db.findMany({
+				tables: ['posts'],
+				where: { posts: { owner: username } }
+			})
+
+			if (posts?.length === 0) {
+				return { err: `${username} hasn't uploaded any photos yet` }
+			} else {
+				return { post: posts }
+			}
+		} catch (e) {
+			set.status = 500
+			pushLogs(`Failed to retrieve photos from ${username}, ${e}`)
+			return { err: serverErr }
+		}
+	})
 
 export default route
