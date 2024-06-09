@@ -30,7 +30,7 @@ const bodySchema = {
 		})
 	}),
 	headers: t.Object({
-		Authorization: t.String()
+		authorization: t.String()
 	})
 }
 
@@ -41,7 +41,7 @@ const route = new Elysia({ prefix: '/blog' })
 			try {
 				const { title, content, tags, categories, visible_to, cover } = body
 
-				const token = checkState(headers.Authorization.split('Bearer ')[1])
+				const token = checkState(headers.authorization.split('Bearer ')[1])
 
 				if (token?.state === 'LoggedIn') {
 					const user = await db.findUnique({
@@ -91,7 +91,7 @@ const route = new Elysia({ prefix: '/blog' })
 				const blogs = await db.findMany({
 					tables: ['blogs'],
 					where: {
-						blogs: { visible_to: checkState(headers?.Authorization)?.username || 'everyone' }
+						blogs: { visible_to: checkState(headers?.authorization)?.username || 'everyone' }
 					},
 					select: {
 						blogs: ['id', 'title', 'author', 'cover', 'published_at']
@@ -119,11 +119,9 @@ const route = new Elysia({ prefix: '/blog' })
 			}
 		},
 		{
-			headers: t.Optional(
-				t.Object({
-					Authorization: t.String()
-				})
-			)
+			headers: t.Object({
+				authorization: t.Optional(t.String())
+			})
 		}
 	)
 	.get(
@@ -134,7 +132,7 @@ const route = new Elysia({ prefix: '/blog' })
 					table: 'blogs',
 					where: {
 						id: params.id,
-						visible_to: checkState(headers.Authorization)?.username || 'everyone'
+						visible_to: checkState(headers.authorization)?.username || 'everyone'
 					}
 				})
 				const author = await db.findUnique({
@@ -156,11 +154,9 @@ const route = new Elysia({ prefix: '/blog' })
 			}
 		},
 		{
-			headers: t.Optional(
-				t.Object({
-					Authorization: t.String()
-				})
-			)
+			headers: t.Object({
+				authorization: t.Optional(t.String())
+			})
 		}
 	)
 	.put(
@@ -173,7 +169,7 @@ const route = new Elysia({ prefix: '/blog' })
 					select: ['author', 'cover']
 				})
 
-				const token = checkState(headers.Authorization, check?.author)
+				const token = checkState(headers.authorization, check?.author)
 
 				if (token?.state === 'Owner') {
 					const { title, content, tags, categories, visible_to, cover } = body
@@ -219,7 +215,7 @@ const route = new Elysia({ prefix: '/blog' })
 					where: { id: params.id },
 					select: ['author', 'cover']
 				})
-				const token = checkState(headers.Authorization, check?.author)
+				const token = checkState(headers.authorization, check?.author)
 				if (token?.state === 'Owner') {
 					await s3Client.send(
 						new DeleteObjectCommand({
@@ -242,7 +238,7 @@ const route = new Elysia({ prefix: '/blog' })
 		},
 		{
 			headers: t.Object({
-				Authorization: t.String()
+				authorization: t.String()
 			})
 		}
 	)
@@ -250,7 +246,7 @@ const route = new Elysia({ prefix: '/blog' })
 		'/:id/like',
 		async ({ params, set, headers }) => {
 			try {
-				const verify = checkState(headers.Authorization)
+				const verify = checkState(headers.authorization)
 
 				if (verify?.state === 'LoggedIn') {
 					const blog = await db.findUnique({
@@ -306,7 +302,7 @@ const route = new Elysia({ prefix: '/blog' })
 		},
 		{
 			headers: t.Object({
-				Authorization: t.String()
+				authorization: t.String()
 			})
 		}
 	)
@@ -314,7 +310,7 @@ const route = new Elysia({ prefix: '/blog' })
 		'/:id/dislike',
 		async ({ params, set, headers }) => {
 			try {
-				const verify = checkState(headers.Authorization)
+				const verify = checkState(headers.authorization)
 
 				if (verify?.state === 'LoggedIn') {
 					const blog = await db.findUnique({
@@ -370,7 +366,7 @@ const route = new Elysia({ prefix: '/blog' })
 		},
 		{
 			headers: t.Object({
-				Authorization: t.String()
+				authorization: t.String()
 			})
 		}
 	)
@@ -378,7 +374,7 @@ const route = new Elysia({ prefix: '/blog' })
 		'/:id/comment',
 		async ({ params, body, set, headers }) => {
 			try {
-				const verify = checkState(headers.Authorization)
+				const verify = checkState(headers.authorization)
 				if (verify?.state === 'LoggedIn') {
 					const { msg } = body
 
@@ -430,7 +426,7 @@ const route = new Elysia({ prefix: '/blog' })
 		},
 		{
 			headers: t.Object({
-				Authorization: t.String()
+				authorization: t.String()
 			}),
 			body: t.Object({
 				msg: t.String()
@@ -443,10 +439,10 @@ const route = new Elysia({ prefix: '/blog' })
 			try {
 				const user = await db.findUnique({
 					table: 'users',
-					where: { username: checkState(headers?.Authorization)?.username || '' },
+					where: { username: checkState(headers?.authorization)?.username || '' },
 					select: ['username']
 				})
-				const verify = checkState(headers?.Authorization, user?.username)
+				const verify = checkState(headers?.authorization, user?.username)
 
 				if (verify?.state === 'Owner') {
 					const blog = await db.findUnique({
@@ -485,7 +481,7 @@ const route = new Elysia({ prefix: '/blog' })
 		},
 		{
 			headers: t.Object({
-				Authorization: t.String()
+				authorization: t.String()
 			}),
 			body: t.Object({
 				msg: t.String()
@@ -498,10 +494,10 @@ const route = new Elysia({ prefix: '/blog' })
 			try {
 				const user = await db.findUnique({
 					table: 'users',
-					where: { username: checkState(headers?.Authorization)?.username || '' },
+					where: { username: checkState(headers?.authorization)?.username || '' },
 					select: ['username', 'role']
 				})
-				const verify = checkState(headers?.Authorization, user?.username)
+				const verify = checkState(headers?.authorization, user?.username)
 				if (
 					verify?.state === 'Owner' ||
 					user?.role === 'Admin' ||
@@ -553,7 +549,7 @@ const route = new Elysia({ prefix: '/blog' })
 		},
 		{
 			headers: t.Object({
-				Authorization: t.String()
+				authorization: t.String()
 			})
 		}
 	)
