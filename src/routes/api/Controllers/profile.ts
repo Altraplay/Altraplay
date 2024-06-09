@@ -211,5 +211,24 @@ const route = new Elysia({ prefix: '/profile/:username' })
 			return { err: serverErr }
 		}
 	})
+	.get('/services', async ({ params, set }) => {
+		const { username } = params
+		try {
+			const { services } = await db.findMany({
+				tables: ['services'],
+				where: { services: { provider: username } }
+			})
+
+			if (services?.length === 0) {
+				set.status = 404
+			} else {
+				return { services }
+			}
+		} catch (e) {
+			set.status = 500
+			pushLogs(`An error occurred while fetching services from ${username}: ${e}`)
+			return { err: serverErr }
+		}
+	})
 
 export default route
