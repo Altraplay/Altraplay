@@ -171,5 +171,26 @@ const route = new Elysia({ prefix: '/profile/:username' })
 			return { err: serverErr }
 		}
 	})
+	.get('/videos', async ({ params, set }) => {
+		const { username } = params
+
+		try {
+			const videos = await db.findMany({
+				tables: ['videos'],
+				where: { videos: { creator: username } },
+				select: { videos: ['id', 'title', 'cover', 'views', 'published_at'] }
+			})
+
+			if (videos.videos?.length === 0) {
+				return { err: `${username} hasn't uploaded any videos yet` }
+			} else {
+				return videos.videos
+			}
+		} catch (e) {
+			set.status = 500
+			pushLogs(`Error retrieving videos uploaded by ${username}: ${e}`)
+			return { err: serverErr }
+		}
+	})
 
 export default route
