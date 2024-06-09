@@ -437,5 +437,60 @@ const route = new Elysia({ prefix: '/blog' })
 			})
 		}
 	)
+	.put(
+		'/:id/comment/:cid',
+		async ({ body, headers, params, set }) => {
+			try {
+				const user = await db.findUnique({
+					table: 'users',
+					where: { username: checkState(headers?.Authorization)?.username || '' },
+					select: ['username']
+				})
+				const verify = checkState(headers?.Authorization, user?.username)
+
+				if (verify?.state === 'Owner') {
+					const blog = await db.findUnique({
+						table: 'blogs',
+						where: { id: params.id },
+						select: ['comments']
+					})
+					if (blog) {
+						const commentIndex = blog.comments?.findIndex(c => c.id === params.cid)
+						if (commentIndex !== -1) {
+							blog.comments[commentIndex].msg = body.msg
+							await db.update({
+								table: 'blogs',
+								where: { id: params.id },
+								data: { comments: blog.comments }
+							})
+							set.status = 204
+						}
+					} else {
+						set.status = 404
+						return { err: "How are you even trying to edit a comment that doesn't even exist yo" }
+					}
+				} else {
+					set.status = 401
+					return {
+						err: "You are trying to edit someone else's comment, what are you a hacker or something?"
+					}
+				}
+			} catch (e) {
+				set.status = 500
+				pushLogs(
+					`Error editing comment on blog id: ${params.id}, error: ${e}, comment id: ${params.cid}`
+				)
+				return { err: serverErr }
+			}
+		},
+		{
+			headers: t.Object({
+				Authorization: t.String()
+			}),
+			body: t.Object({
+				msg: t.String()
+			})
+		}
+	)
 
 export default route
