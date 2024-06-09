@@ -492,5 +492,70 @@ const route = new Elysia({ prefix: '/blog' })
 			})
 		}
 	)
+	.delete(
+		'/:id/comment/:cid',
+		async ({ headers, params, set }) => {
+			try {
+				const user = await db.findUnique({
+					table: 'users',
+					where: { username: checkState(headers?.Authorization)?.username || '' },
+					select: ['username', 'role']
+				})
+				const verify = checkState(headers?.Authorization, user?.username)
+				if (
+					verify?.state === 'Owner' ||
+					user?.role === 'Admin' ||
+					user?.role === 'Super Admin' ||
+					user?.role === 'Moderator'
+				) {
+					const blog = await db.findUnique({
+						table: 'blogs',
+						where: { id: params.id },
+						select: ['comments']
+					})
+					if (blog) {
+						const commentIndex = blog.comments?.findIndex(c => c.id === params.cid)
+						if (commentIndex !== -1) {
+							blog.comments.splice(commentIndex, 1)
+							await db.update({
+								table: 'blogs',
+								where: { id: params.id },
+								data: { comments: blog.comments }
+							})
+							await db.delete({
+								table: 'history',
+								where: {
+									id: params.cid,
+									type: 'comment',
+									user: verify?.username,
+									visit_url: `/blog/${params.id}`
+								}
+							})
+							set.status = 204
+						}
+					} else {
+						set.status = 404
+						return { err: "How are you even trying to delete a comment that doesn't even exist yo" }
+					}
+				} else {
+					set.status = 401
+					return {
+						err: "You are trying to delete someone else's comment, what are you a hacker or something?"
+					}
+				}
+			} catch (e) {
+				set.status = 500
+				pushLogs(
+					`Error deleting comment on blog id: ${params.id}, error: ${e}, comment id: ${params.cid}`
+				)
+				return { err: serverErr }
+			}
+		},
+		{
+			headers: t.Object({
+				Authorization: t.String()
+			})
+		}
+	)
 
 export default route
