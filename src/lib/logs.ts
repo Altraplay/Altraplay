@@ -1,11 +1,10 @@
 import { CompressionTypes, Partitioners } from 'kafkajs'
 import kafka from '@Kafka/kafka'
 import db from '@DB/clickhouse'
-import { randomString, randomInt } from '$lib/random'
 
-async function pushLogs(logs: string) {
+async function pushLogs(logs: string, type: 'error' | 'warning' | 'info' = 'error') {
 	try {
-		console.error(logs)
+		console[type](logs)
 		const producer = kafka.producer({ createPartitioner: Partitioners.DefaultPartitioner })
 		await producer.connect()
 		await producer.send({
@@ -23,13 +22,11 @@ async function pushLogs(logs: string) {
 				for (const log of logs) {
 					await db.insert({
 						table: 'logs',
-						values: [
-							{ id: randomString(randomInt(30, 50), true, true, true), log: log.value?.toString() }
-						],
+						values: [{ type, log: log.value?.toString() }],
 						format: 'JSONEachRow'
 					})
 					resolveOffset(log.offset)
-					await commitOffsetsIfNecessary(log.offset)
+					await commitOffsetsIfNecessary()
 					await heartbeat()
 				}
 			}
