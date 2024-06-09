@@ -230,5 +230,22 @@ const route = new Elysia({ prefix: '/profile/:username' })
 			return { err: serverErr }
 		}
 	})
+	.get('/collections', async ({ params, set }) => {
+		const { username } = params
+		try {
+			const { collections } = await db.findMany({
+				tables: ['collections'],
+				where: { owner: username }
+			})
+
+			if (collections?.collections.length === 0) {
+				return { err: `${username} don't have any public collections` }
+			} else return { collections }
+		} catch (e) {
+			set.status = 500
+			pushLogs(`Ran into an error while fetching collections uploaded by ${username}: ${e}`)
+			return { err: serverErr }
+		}
+	})
 
 export default route
