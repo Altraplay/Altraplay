@@ -1,7 +1,7 @@
 import { Elysia } from 'elysia'
 import { helmet } from 'elysia-helmet'
 import { rateLimit } from 'elysia-rate-limit'
-import { compression } from 'elysia-compression'
+import { compression } from 'elysia-compress'
 
 import auth from '../Controllers/auth'
 import profile from '../Controllers/profile'
@@ -16,7 +16,7 @@ const app = new Elysia({ prefix: '/api', precompile: true })
 		rateLimit({
 			duration: 300000,
 			max: 5200,
-			responseMessage: { err: 'Our server needs a 5 min coffee break' }
+			errorResponse: 'Our server needs a 5 min coffee break'
 		})
 	)
 	.use(compression())
