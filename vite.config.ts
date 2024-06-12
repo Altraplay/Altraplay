@@ -3,5 +3,10 @@ import { defineConfig } from 'vite'
 
 export default defineConfig({
 	plugins: [sveltekit()],
-	server: { strictPort: true }
+	server: {
+		strictPort: true,
+		fs: {
+			allow: ['.']
+		}
+	}
 })
