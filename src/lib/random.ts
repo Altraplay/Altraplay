@@ -1,11 +1,14 @@
 import crypto from 'crypto'
 
 function randomInt(min: number, max: number): number {
-	let cryptoRandom
-	if (typeof window !== 'undefined') {
-		cryptoRandom = window.crypto.getRandomValues(new Uint32Array(1))[0] / 2 ** 32
+	let cryptoRandom: number
+	if (typeof window !== 'undefined' && window.crypto) {
+		const array = new Uint32Array(1)
+		window.crypto.getRandomValues(array)
+		cryptoRandom = array[0] / (0xffffffff + 1)
 	} else {
-		cryptoRandom = crypto.getRandomValues(new Uint32Array(1))[0] / 2 ** 32
+		const buffer = crypto.randomBytes(4)
+		cryptoRandom = buffer.readUInt32BE(0) / (0xffffffff + 1)
 	}
 	return Math.floor(cryptoRandom * (max - min + 1)) + min
 }
