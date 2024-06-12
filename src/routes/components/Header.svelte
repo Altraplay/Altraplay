@@ -21,7 +21,7 @@
 	}
 </script>
 
-<header class="sticky left-0 top-0 z-[150] flex w-screen items-center justify-evenly py-2">
+<header class="sticky left-0 top-0 z-[150] flex w-screen items-center justify-evenly py-2 h-[58px] bg-background">
 	<button
 		id="menu"
 		class="hover:fill-white focus:fill-white"
@@ -53,22 +53,12 @@
 			aria-label="Search Input"
 			bind:this={search} />
 		<button type="reset">
-			<span class="fa-solid fa-xmark p-2 text-center text-slate-400 transition hover:text-white" />
+			<span class="fa-solid fa-xmark p-2 text-center text-slate-400 transition duration-300 hover:text-white focus:text-white" />
 		</button>
 		<button type="submit">
-			<span class="fa-solid fa-magnifying-glass p-2 text-slate-400 transition hover:text-white" />
+			<span class="fa-solid fa-magnifying-glass p-2 text-slate-400 transition duration-300 hover:text-white focus:text-white" />
 		</button>
 	</form>
 	<Button label="Login" href="/login" variant="secondary" />
 	<Button label="Sign up" href="/sign-up" />
 </header>
-
-<style>
-	header {
-		background: rgba(255, 255, 255, 0.03);
-		box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-		backdrop-filter: blur(2.5px);
-		-webkit-backdrop-filter: blur(2.5px);
-		height: 58px;
-	}
-</style>
