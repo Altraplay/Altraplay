@@ -4,9 +4,8 @@ import db from '@DB/orm'
 import pushLogs from '$lib/logs'
 import { randomString, randomInt } from '$lib/random'
 import s3Client from '$lib/S3'
-import { DeleteObjectCommand } from '@aws-sdk/client-s3'
+import { DeleteObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3'
 import { serverErr } from '$lib/constant'
-import { optimizeImage } from '$lib/utils'
 
 const bodySchema = {
 	body: t.Object({
@@ -51,12 +50,19 @@ const route = new Elysia({ prefix: '/blog' })
 					})
 
 					if (user) {
-						const coverUrl = await optimizeImage(
-							await cover.arrayBuffer(),
-							'tg-blog-images',
-							'1600x900'
-						)
-
+						const coverUrl = `${randomString(randomInt(20, 52))}.${cover.name.split('.')[1]}`
+						if (Bun.env.AWS_SECRET_ACCESS_KEY) {
+							await s3Client.send(
+								new PutObjectCommand({
+									Bucket: 'tg-blog-images',
+									Key: coverUrl,
+									Body: cover,
+									ContentType: cover.type
+								})
+							)
+						} else {
+							Bun.write(`../../../../static/${coverUrl}`, cover)
+						}
 						await db.create({
 							table: 'blogs',
 							data: {
@@ -173,7 +179,7 @@ const route = new Elysia({ prefix: '/blog' })
 
 				if (token?.state === 'Owner') {
 					const { title, content, tags, categories, visible_to, cover } = body
-					let coverUrl
+					const coverUrl = `${randomString(randomInt(20, 52))}.${cover.name.split('.')[1]}`
 					if (cover) {
 						if (Bun.env.AWS_SECRET_ACCESS_KEY) {
 							await Promise.all([
@@ -183,7 +189,14 @@ const route = new Elysia({ prefix: '/blog' })
 										Key: check?.cover
 									})
 								),
-								optimizeImage(await cover.arrayBuffer(), 'tg-blog-images', '1600x900')
+								s3Client.send(
+									new PutObjectCommand({
+										Bucket: 'tg-blog-images',
+										Key: coverUrl,
+										Body: cover,
+										ContentType: cover.type
+									})
+								)
 							])
 						} else Bun.write(`../../../../static/${coverUrl}`, cover)
 					}
