@@ -50,9 +50,14 @@ const route = new Elysia({ prefix: '/profile/:username' })
 			try {
 				const { username } = params
 				const { newUsername, password, bio, skills, languages, links, name, email } = body
-				const token = checkState(body.auth, username)
+				const user = await db.findUnique({
+					table: 'users',
+                    where: { username, is_email_verified: true},
+                    select: ['id']
+				})
+				const token = checkState(body.auth, user?.id)
 
-				if (token?.state === 'Owner') {
+				if (token?.state === 'Owner' || !user?.id) {
 					const hash = await Bun.password.hash(password, { algorithm: 'bcrypt', cost: 10 })
 
 					await db.update({
@@ -67,10 +72,10 @@ const route = new Elysia({ prefix: '/profile/:username' })
 							language: languages,
 							email
 						},
-						where: { username }
+						where: { id: user?.id}
 					})
 
-					const token = GenToken({ username, password }, '365d')
+					const token = GenToken({ id: user?.id, verified: true }, '365d')
 
 					return { token }
 				} else {
@@ -110,31 +115,28 @@ const route = new Elysia({ prefix: '/profile/:username' })
 			try {
 				const { username } = params
 				const { password } = body
-				const token = await checkState(body.auth, username)
 
-				if (token?.state === 'Owner') {
-					const user = await db.findUnique({
-						table: 'users',
-						where: { username },
-						select: ['password']
-					})
+				const user = await db.findUnique({
+					table: 'users',
+					where: { username, is_email_verified: true},
+					select: ['password', 'id']
+				})
 
-					if (user) {
-						const correct = await Bun.password.verify(password, user.password, 'bcrypt')
+				const token = checkState(body.auth, user?.id)
+
+				if (token?.state === 'Owner' || !user?.id) {
+
+						const correct = await Bun.password.verify(password, user?.password, 'bcrypt')
 						if (correct) {
 							await db.delete({
 								table: 'users',
-								where: { username }
+								where: { id: user?.id }
 							})
 							set.status = 204
 						} else {
 							set.status = 401
 							return { err: 'Wrong password' }
 						}
-					} else {
-						set.status = 404
-						return { err: `User with the username of ${username}, does not exist` }
-					}
 				} else {
 					set.status = 401
 					return { err: 'You are not authorized to delete this profile' }

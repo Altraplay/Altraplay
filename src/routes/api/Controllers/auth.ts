@@ -66,12 +66,14 @@ const route = new Elysia({ prefix: '/auth' })
 
 				const hash = await Bun.password.hash(password, { algorithm: 'bcrypt', cost: 10 })
 
-				const token = GenToken({ username: newUsername, password: hash }, '1h')
+				const id = randomString(randomInt(5, 85), true, true, true, true)
+
+				const token = GenToken({ id: newUsername, verified: false }, '1h')
 
 				await db.create({
 					table: 'users',
 					data: {
-						id: randomString(randomInt(10, 85), true, true, true, true, true),
+						id,
 						username: newUsername,
 						password: hash,
 						name: name as string,
@@ -159,14 +161,14 @@ const route = new Elysia({ prefix: '/auth' })
 				const user = await db.findUnique({
 					table: 'users',
 					where: { email: email.toLowerCase().replaceAll(' ', '') },
-					select: ['username', 'email', 'password', 'name']
+					select: ['id', 'email', 'password', 'name']
 				})
 
 				if (user) {
 					const match = await Bun.password.verify(password, user.password, 'bcrypt')
 
 					if (match) {
-						const token = GenToken({ username: user.username, password: user.password }, '1h')
+						const token = GenToken({ id: user.id, verified: false }, '1h')
 
 						await db.update({
 							table: 'users',
@@ -237,26 +239,26 @@ const route = new Elysia({ prefix: '/auth' })
 		async ({ query, set }) => {
 			try {
 				const token = checkState(query.token)
-				if (token?.username) {
+				if (token?.id) {
 					const user = await db.findUnique({
 						table: 'users',
-						where: { username: token.username },
-						select: ['username', 'verification_token', 'password']
+						where: { id: token.id },
+						select: ['username', 'verification_token', 'password', 'id']
 					})
 
 					if (user) {
 						if (query.token === user.verification_token) {
-							const matchUsername = checkState(query.token, user.username)
+							const matchID = checkState(query.token, user.id)
 
-							if (matchUsername?.state === 'Owner') {
+							if (matchID?.state === 'Owner') {
 								const newToken = GenToken(
-									{ username: user.username, password: user.password },
+									{ id: user.id, verified: true },
 									'365d'
 								)
 								await db.update({
 									table: 'users',
 									data: { is_email_verified: true },
-									where: { username: user.username }
+									where: { id: user.id }
 								})
 
 								set.status = 201

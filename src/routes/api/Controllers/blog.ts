@@ -45,8 +45,8 @@ const route = new Elysia({ prefix: '/blog' })
 				if (token?.state === 'LoggedIn') {
 					const user = await db.findUnique({
 						table: 'users',
-						where: { username: token.username, is_email_verified: true },
-						select: ['username', 'is_email_verified']
+						where: { id: token.id, is_email_verified: true },
+						select: ['is_email_verified']
 					})
 
 					if (user) {
@@ -72,7 +72,7 @@ const route = new Elysia({ prefix: '/blog' })
 								tags,
 								categories,
 								visible_to,
-								author: token.username,
+								author: token.id,
 								cover: coverUrl,
 								published_at: new Date(Date.now()),
 								likes: 0,
@@ -97,7 +97,7 @@ const route = new Elysia({ prefix: '/blog' })
 				const blogs = await db.findMany({
 					tables: ['blogs'],
 					where: {
-						blogs: { visible_to: checkState(headers?.authorization)?.username || 'everyone' }
+						blogs: { visible_to: checkState(headers?.authorization)?.id || 'everyone' }
 					},
 					select: {
 						blogs: ['id', 'title', 'author', 'cover', 'published_at']
@@ -108,7 +108,7 @@ const route = new Elysia({ prefix: '/blog' })
 						await db.findMany({
 							tables: ['users'],
 							where: {
-								users: { is_email_verified: true, username: blog.author }
+								users: { is_email_verified: true, id: blog.author }
 							},
 							select: {
 								users: ['username', 'name', 'profile_picture', 'verified']
@@ -138,13 +138,13 @@ const route = new Elysia({ prefix: '/blog' })
 					table: 'blogs',
 					where: {
 						id: params.id,
-						visible_to: checkState(headers.authorization)?.username || 'everyone'
+						visible_to: checkState(headers.authorization)?.id || 'everyone'
 					}
 				})
 				const author = await db.findUnique({
 					table: 'users',
 					where: {
-						username: blog?.author,
+						id: blog?.author,
 						is_email_verified: true
 					},
 					select: ['username', 'name', 'profile_picture', 'verified', 'followers']
@@ -270,7 +270,7 @@ const route = new Elysia({ prefix: '/blog' })
 
 					const user = await db.findUnique({
 						table: 'users',
-						where: { username: verify.username },
+						where: { id: verify.id },
 						select: ['liked']
 					})
 
@@ -283,7 +283,7 @@ const route = new Elysia({ prefix: '/blog' })
 							})
 							await db.update({
 								table: 'users',
-								where: { username: verify.username },
+								where: { id: verify.id },
 								data: { liked: { blogs: [...user?.liked?.blogs, params.id] } }
 							})
 						} else {
@@ -294,7 +294,7 @@ const route = new Elysia({ prefix: '/blog' })
 							})
 							await db.update({
 								table: 'users',
-								where: { username: verify.username },
+								where: { id: verify.id },
 								data: { liked: { blogs: user.liked.blogs.filter(id => id !== params.id) } }
 							})
 						}
@@ -334,7 +334,7 @@ const route = new Elysia({ prefix: '/blog' })
 
 					const user = await db.findUnique({
 						table: 'users',
-						where: { username: verify.username },
+						where: { id: verify.id },
 						select: ['disliked']
 					})
 
@@ -347,7 +347,7 @@ const route = new Elysia({ prefix: '/blog' })
 							})
 							await db.update({
 								table: 'users',
-								where: { username: verify.username },
+								where: { id: verify.id },
 								data: { disliked: { blogs: [...user?.disliked?.blogs, params.id] } }
 							})
 						} else {
@@ -358,7 +358,7 @@ const route = new Elysia({ prefix: '/blog' })
 							})
 							await db.update({
 								table: 'users',
-								where: { username: verify.username },
+								where: { id: verify.id },
 								data: { disliked: { blogs: user.disliked.blogs.filter(id => id !== params.id) } }
 							})
 						}
@@ -406,7 +406,7 @@ const route = new Elysia({ prefix: '/blog' })
 									{
 										id: randomString(randomInt(3, 62)),
 										msg,
-										who: verify.username,
+										who: verify.id,
 										date: new Date(Date.now())
 									}
 								]
@@ -418,7 +418,7 @@ const route = new Elysia({ prefix: '/blog' })
 								id: randomString(randomInt(3, 65)),
 								time: new Date(Date.now()),
 								type: 'comment',
-								user: verify.username,
+								user: verify.id,
 								visit_url: `/blog/${params.id}`
 							}
 						})
@@ -452,10 +452,10 @@ const route = new Elysia({ prefix: '/blog' })
 			try {
 				const user = await db.findUnique({
 					table: 'users',
-					where: { username: checkState(headers?.authorization)?.username || '' },
-					select: ['username']
+					where: { id: checkState(headers?.authorization)?.id || '' },
+					select: ['id']
 				})
-				const verify = checkState(headers?.authorization, user?.username)
+				const verify = checkState(headers?.authorization, user?.id)
 
 				if (verify?.state === 'Owner') {
 					const blog = await db.findUnique({
@@ -507,10 +507,10 @@ const route = new Elysia({ prefix: '/blog' })
 			try {
 				const user = await db.findUnique({
 					table: 'users',
-					where: { username: checkState(headers?.authorization)?.username || '' },
-					select: ['username', 'role']
+					where: { id: checkState(headers?.authorization)?.id || '' },
+					select: ['id', 'role']
 				})
-				const verify = checkState(headers?.authorization, user?.username)
+				const verify = checkState(headers?.authorization, user?.id)
 				if (
 					verify?.state === 'Owner' ||
 					user?.role === 'Admin' ||
@@ -536,7 +536,7 @@ const route = new Elysia({ prefix: '/blog' })
 								where: {
 									id: params.cid,
 									type: 'comment',
-									user: verify?.username,
+									user: verify?.id,
 									visit_url: `/blog/${params.id}`
 								}
 							})

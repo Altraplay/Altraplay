@@ -73,15 +73,15 @@ const route = new Elysia({ prefix: '/user' })
 		'/checktoken',
 		async ({ headers, set, body }) => {
 			try {
-				const isCorrect = checkState(headers.Authorization.replace('Bearer ', ''), body?.username)
+				const isCorrect = checkState(headers.Authorization.replace('Bearer ', ''), body?.id)
 				if (isCorrect?.state === 'LoggedIn' || isCorrect?.state === 'Owner') {
 					const doUserExist = await db.findMany({
 						tables: ['users'],
-						where: { users: { username: isCorrect.username } },
+						where: { users: { id: isCorrect.id } },
 						select: { users: ['is_email_verified'] }
 					})
 
-					if (doUserExist?.users.length > 0 && doUserExist?.users[0]?.is_email_verified) {
+					if (doUserExist?.users?.length > 0 && doUserExist?.users[0]?.is_email_verified) {
 						return isCorrect
 					} else {
 						set.status = 400
@@ -103,7 +103,7 @@ const route = new Elysia({ prefix: '/user' })
 			}),
 			body: t.Optional(
 				t.Object({
-					username: t.String()
+					id: t.String()
 				})
 			)
 		}
