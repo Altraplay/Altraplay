@@ -8,13 +8,7 @@ export const client = new cassandra.Client({
 })
 
 export async function executeQuery(query: string, params: any[] = [], allowFiltering = false) {
-	try {
-		const fullQuery = allowFiltering ? `${query} ALLOW FILTERING` : query
-		const result = await client.execute(fullQuery, params, { prepare: true })
-		console.log(fullQuery)
-		return result
-	} catch (error) {
-		console.error('Query execution error:', error)
-		throw error
-	}
+	const fullQuery = allowFiltering ? `${query} ALLOW FILTERING` : query
+	const result = await client.execute(fullQuery, params, { prepare: true })
+	return result
 }
