@@ -1,0 +1,32 @@
+name: Bug report
+description: Template for bug reports
+title: 'Bug: '
+assignees:
+  - TechGunners
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      label: Description
+      description: A clear and concise description of the problem
+  - type: markdown
+    attributes:
+      label: Steps of Reproduction
+      description: provide steps to reproduce the problem
+      render: '1.'
+    validations:
+      required: true
+  - type: markdown
+    attributes:
+      label: Logs or Screenshots
+      description: provide error logs or screenshots
+  - type: dropdown
+    attributes:
+      label: Operating system
+      description: select your os
+      options:
+        - Windows
+        - Mac
+        - Linux
+        - Docker
