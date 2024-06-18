@@ -350,5 +350,55 @@ const route = new Elysia({ prefix: '/auth' })
 			})
 		}
 	)
+	.post(
+		'/reset-password',
+		async ({ body, set, query }) => {
+			try {
+				const { newPassword } = body
+				const { token } = query
+				const tokenData = checkState(token)
+
+				if (tokenData?.id && tokenData.state === 'LoggedIn') {
+					const user = await db.findUnique({
+						table: 'users',
+						where: { id: tokenData.id, is_email_verified: true },
+						select: ['verification_token', 'id']
+					})
+
+					if (user && token === user.verification_token) {
+						const hash = await Bun.password.hash(newPassword, { algorithm: 'bcrypt', cost: 10 })
+						const newToken = GenToken({ id: user.id, verified: true }, '365d')
+
+						await db.update({
+							table: 'users',
+							data: { password: hash, verification_token: null },
+							where: { id: tokenData.id, is_email_verified: true }
+						})
+
+						return { newToken }
+					} else {
+						set.status = 'Unauthorized'
+						return { err: 'The link is invalid or expired' }
+					}
+				} else {
+					set.status = 'Unauthorized'
+					return { err: 'The link is invalid or expired' }
+				}
+			} catch (e) {
+				set.status = 500
+				pushLogs(`Error while resetting the password: ${e}`)
+				return { err: serverErr }
+			}
+		},
+		{
+			query: t.Object({ token: t.String() }),
+			body: t.Object({
+				newPassword: t.String({
+					minLength: 30,
+					error: 'Password must contain 30 or more characters'
+				})
+			})
+		}
+	)
 
 export default route
