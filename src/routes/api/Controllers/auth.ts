@@ -251,10 +251,7 @@ const route = new Elysia({ prefix: '/auth' })
 							const matchID = checkState(query.token, user.id)
 
 							if (matchID?.state === 'Owner') {
-								const newToken = GenToken(
-									{ id: user.id, verified: true },
-									'365d'
-								)
+								const newToken = GenToken({ id: user.id, verified: true }, '365d')
 								await db.update({
 									table: 'users',
 									data: { is_email_verified: true },
@@ -286,6 +283,120 @@ const route = new Elysia({ prefix: '/auth' })
 		{
 			query: t.Object({
 				token: t.String()
+			})
+		}
+	)
+	.post(
+		'/forgot-password',
+		async ({ body, set }) => {
+			const { email } = body
+			try {
+				const user = await db.findUnique({
+					table: 'users',
+					where: { email: email.toLowerCase().replaceAll(' ', ''), is_email_verified: true },
+					select: ['id', 'email', 'name', 'password']
+				})
+
+				if (user) {
+					const token = GenToken({ id: user.id, verified: false }, '1h')
+
+					await db.update({
+						table: 'users',
+						data: { verification_token: token },
+						where: { id: user.id, is_email_verified: true }
+					})
+
+					await mailer.emails.send({
+						from: 'Tech Gunner Industries <onboarding@resend.dev>',
+						to: user.email,
+						subject: 'Tech Gunner - Password Reset Request',
+						html: `
+                        <div style="max-width: 600px; margin: 0 auto; padding: 20px; background: #09132d; color: #fff; font-family: Arial, sans-serif; border-radius: .8rem;">
+                            <img src="https://techgunner.com/text-logo.png" width="500px" alt="Tech Gunner Logo" style="margin: 0 auto;">
+                            <h1 style="text-align: center;">Hello, ${user.name}!</h1>
+                            <p>We received a request to reset your password. Please click the link below to reset your password:</p>
+                            <div style="text-align: center; margin-top: 20px;">
+                                <a href="${Bun.env.DOMAIN}/reset-password?token=${token}" style="display: inline-block; padding: 5px 20px; background-color: #0effbd; color: #09132d; text-decoration: none; border-radius: 5px; font-weight: bold;">Reset Password</a>
+                            </div>
+                            <p style="margin-top: 20px;">If you did not request a password reset, please ignore this email. The link will expire in 1 hour.</p>
+                            <p style="margin-top: 20px;">Best Regards,<br/>Tech Gunner Industries &copy;</p>
+                        </div>`,
+						text: `
+                        Hello, ${user.name}!
+
+                        We received a request to reset your password. Please click the link below to reset your password:
+                        ${Bun.env.DOMAIN}/reset-password?token=${token}
+
+                        If you did not request a password reset, please ignore this email. The link will expire in 1 hour.
+
+                        Best Regards,
+                        Tech Gunner Industries ©
+                        `
+					})
+					set.status = 204
+				} else {
+					set.status = 400
+					return { err: 'Email not found' }
+				}
+			} catch (e) {
+				set.status = 500
+				pushLogs(`Error while requesting password reset: ${e}, User's email: ${email}`)
+				return { err: serverErr }
+			}
+		},
+		{
+			body: t.Object({
+				email: t.String()
+			})
+		}
+	)
+	.post(
+		'/reset-password',
+		async ({ body, set, query }) => {
+			try {
+				const { newPassword } = body
+				const { token } = query
+				const tokenData = checkState(token)
+
+				if (tokenData?.id && tokenData.state === 'LoggedIn') {
+					const user = await db.findUnique({
+						table: 'users',
+						where: { id: tokenData.id, is_email_verified: true },
+						select: ['verification_token', 'id']
+					})
+
+					if (user && token === user.verification_token) {
+						const hash = await Bun.password.hash(newPassword, { algorithm: 'bcrypt', cost: 10 })
+						const newToken = GenToken({ id: user.id, verified: true }, '365d')
+
+						await db.update({
+							table: 'users',
+							data: { password: hash, verification_token: null },
+							where: { id: tokenData.id, is_email_verified: true }
+						})
+
+						return { newToken }
+					} else {
+						set.status = 'Unauthorized'
+						return { err: 'The link is invalid or expired' }
+					}
+				} else {
+					set.status = 'Unauthorized'
+					return { err: 'The link is invalid or expired' }
+				}
+			} catch (e) {
+				set.status = 500
+				pushLogs(`Error while resetting the password: ${e}`)
+				return { err: serverErr }
+			}
+		},
+		{
+			query: t.Object({ token: t.String() }),
+			body: t.Object({
+				newPassword: t.String({
+					minLength: 30,
+					error: 'Password must contain 30 or more characters'
+				})
 			})
 		}
 	)
