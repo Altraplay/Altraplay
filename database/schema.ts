@@ -1,126 +1,221 @@
-import { executeQuery } from './db'
+import db from './orm'
+
+const comments = {
+	type: [
+		{
+			id: 'text',
+			comment: 'text',
+			author: 'text',
+			likes: 'bigint',
+			dislikes: 'bigint',
+			time: 'timestamp',
+			replies: [
+				{
+					id: 'text',
+					reply: 'text',
+					author: 'text',
+					likes: 'bigint',
+					dislikes: 'bigint',
+					time: 'timestamp'
+				}
+			]
+		}
+	]
+}
 
 async function push() {
-	await executeQuery(`CREATE TYPE IF NOT EXISTS reply (
-        who text,
-        msg text,
-        date timestamp
-    )`)
-
-	await executeQuery(`CREATE TYPE IF NOT EXISTS comment (
-        who text,
-        msg text,
-        replies list<frozen<reply>>,
-        date timestamp
-    )`)
-
-	await executeQuery(`CREATE TABLE IF NOT EXISTS users (
-        id text PRIMARY KEY,
-        username text,
-        name text,
-        bio text,
-        email text,
-        password text,
-        followers bigint,
-        following set<text>,
-        profile_picture text,
-        banner text,
-        level text,
-        role text,
-        points bigint,
-        needs bigint,
-        links set<text>,
-        verified boolean,
-        skills set<text>,
-        languages set<text>,
-        team set<text>,
-        notifications map<text, text>,
-        is_history_on boolean,
-        liked set<text>,
-        disliked set<text>,
-        only_visible_to text,
-        is_email_verified boolean,
-        verification_token text,
-        earning map<text, text>,
-        achievements map<text, text>,
-        joined timestamp
-    );`)
-
-	await executeQuery(`CREATE TABLE IF NOT EXISTS blogs (
-        id text PRIMARY KEY,
-        title text,
-        author text,
-        content text,
-        cover text,
-        likes bigint,
-        dislikes bigint,
-        views bigint,
-        comments list<frozen<comment>>,
-        tags set<text>,
-        images list<text>,
-        visible_to set<text>,
-        categories set<text>,
-        published_at timestamp
-    );`)
-
-	await executeQuery(`CREATE TABLE IF NOT EXISTS videos (
-        id text PRIMARY KEY,
-        title text,
-        url text,
-        creator text,
-        description text,
-        cover text,
-        likes bigint,
-        dislikes bigint,
-        views bigint,
-        comments list<frozen<comment>>,
-        tags set<text>,
-        visible_to set<text>,
-        categories set<text>,
-        published_at timestamp
-    );`)
-
-	await executeQuery(`CREATE TABLE IF NOT EXISTS posts (
-        id text PRIMARY KEY,
-        title text,
-        url text,
-        owner text,
-        likes bigint,
-        dislikes bigint,
-        views bigint,
-        comments list<frozen<comment>>,
-        tags set<text>,
-        visible_to set<text>,
-        categories set<text>,
-        published_at timestamp
-    );`)
-
-	await executeQuery(`CREATE TABLE IF NOT EXISTS messages (
-        id text PRIMARY KEY,
-        sender text,
-        receiver text,
-        message text,
-        read boolean,
-        reply_of text,
-        edited boolean,
-        sent_at timestamp
-    );`)
-
-	await executeQuery(`CREATE TABLE IF NOT EXISTS history (
-        id text PRIMARY KEY,
-        user text,
-        visit_url text,
-        type text,
-        time timestamp
-    );`)
-
-	await executeQuery(`CREATE TABLE IF NOT EXISTS search_history (
-        id text PRIMARY KEY,
-        user text,
-        query text,
-        time timestamp
-    );`)
-	process.exit(0)
+	db.schema({
+		users: {
+			columns: {
+				id: { type: 'text', isPrimaryKey: true },
+				username: { type: 'text', index: true },
+				name: 'text',
+				password: 'text',
+				email: { type: 'text', index: true },
+				bio: 'text',
+				profile_picture: 'text',
+				banner: 'text',
+				followers: 'list<text>',
+				following: 'list<text>',
+				interests: 'list<text>',
+				points: 'bigint',
+				level: 'text',
+				needs_for_next_level: 'text',
+				roles: 'list<text>',
+				links: 'list<text>',
+				skills: { type: [{ name: 'text', level: 'int' }] },
+				languages: { type: [{ name: 'text', level: 'int' }] },
+				verified: 'boolean',
+				team: { type: [{ user_id: 'text', role: 'text' }] },
+				is_email_verified: { type: 'boolean', index: true },
+				otp: 'text',
+				notifications: {
+					type: [
+						{
+							id: 'text',
+							title: 'text',
+							link: 'text',
+							type: 'text',
+							seen: 'boolean',
+							date: 'timestamp'
+						}
+					]
+				},
+				collect_history: 'boolean',
+				liked: {
+					type: {
+						blogs: 'list<text>',
+						posts: 'list<text>',
+						comments: 'list<text>',
+						videos: 'list<text>'
+					},
+					frozen: true
+				},
+				disliked: {
+					type: {
+						blogs: 'list<text>',
+						posts: 'list<text>',
+						comments: 'list<text>',
+						videos: 'list<text>'
+					},
+					frozen: true
+				},
+				blocked: 'list<text>',
+				visibility: 'list<text>',
+				logged_in_devices: {
+					type: [
+						{
+							name: 'text',
+							ip: 'text'
+						}
+					]
+				},
+				earning: 'bigint',
+				achievements: 'list<text>',
+				joined_at: { type: 'timestamp', index: true }
+			}
+		},
+		blogs: {
+			columns: {
+				id: { type: 'text', isPrimaryKey: true },
+				title: 'text',
+				content: 'text',
+				author: { type: 'text', index: true },
+				cover: 'text',
+				likes: 'bigint',
+				dislikes: 'bigint',
+				comments,
+				visibility: 'list<text>',
+				slashtags: 'list<text>',
+				views: 'bigint',
+				created_at: { type: 'timestamp', index: true }
+			}
+		},
+		posts: {
+			columns: {
+				id: { type: 'text', isPrimaryKey: true },
+				caption: 'text',
+				url: 'text',
+				posted_by: { type: 'text', index: true },
+				likes: 'bigint',
+				dislikes: 'bigint',
+				comments,
+				visibility: 'list<text>',
+				slashtags: 'list<text>',
+				views: 'bigint',
+				created_at: { type: 'timestamp', index: true }
+			}
+		},
+		videos: {
+			columns: {
+				id: { type: 'text', isPrimaryKey: true },
+				title: 'text',
+				description: 'text',
+				url: { type: 'text', index: true },
+				cover: 'text',
+				creator: { type: 'text', index: true },
+				credits: {
+					type: [
+						{
+							user: 'text',
+							role: 'text'
+						}
+					]
+				},
+				duration: 'duration',
+				likes: 'bigint',
+				dislikes: 'bigint',
+				comments,
+				visibility: 'list<text>',
+				slashtags: 'list<text>',
+				views: 'bigint',
+				created_at: { type: 'timestamp', index: true }
+			}
+		},
+		messages: {
+			columns: {
+				id: { type: 'text', isPrimaryKey: true },
+				sender: { type: 'text', index: true },
+				receiver: { type: 'text', index: true },
+				status: 'text',
+				type: 'text',
+				message: 'text',
+				sent_at: { type: 'timestamp', index: true }
+			}
+		},
+		history: {
+			columns: {
+				id: { type: 'text', isPrimaryKey: true },
+				user_id: { type: 'text', index: true },
+				type: 'text',
+				url: { type: 'text', index: true },
+				time: { type: 'timestamp', index: true }
+			}
+		},
+		search_history: {
+			columns: {
+				id: { type: 'text', isPrimaryKey: true },
+				user_id: { type: 'text', index: true },
+				query: 'text',
+				time: { type: 'timestamp', index: true }
+			}
+		},
+		collections: {
+			columns: {
+				id: { type: 'text', isPrimaryKey: true },
+				owner: { type: 'text', index: true },
+				name: 'text',
+				description: 'text',
+				visibility: 'list<text>',
+				urls: 'list<text>',
+				created_at: { type: 'timestamp', index: true }
+			}
+		},
+		services: {
+			columns: {
+				id: { type: 'text', isPrimaryKey: true },
+				provider: { type: 'text', index: true },
+				title: 'text',
+				description: 'text',
+				price: 'text',
+				reviews: {
+					type: [
+						{
+							reviewer: 'text',
+							review: 'text',
+							rating: 'decimal',
+							time: 'timestamp'
+						}
+					]
+				},
+				created_at: { type: 'timestamp', index: true },
+				slashtags: 'list<text>'
+			}
+		}
+	})
+		.then(() => console.log('Tables created'))
+		.catch(err => console.error(err))
+		.finally(() => process.exit(0))
 }
 
 push()
