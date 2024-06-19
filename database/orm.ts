@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { executeQuery } from './db'
 import { types as CassandraTypes } from 'cassandra-driver'
 import type { User } from '../src/types/user'
@@ -255,13 +256,252 @@ async function deleteMany<T extends keyof TableMap>({
 	}
 }
 
+type ColumnDefinition = {
+	type: string | object | object[]
+	isPrimaryKey?: boolean
+	index?: boolean
+	frozen?: boolean
+}
+
+type SchemaDefinition = {
+	[table: string]: {
+		columns: {
+			[column: string]: string | ColumnDefinition
+		}
+	}
+}
+
+async function schema(newSchema: SchemaDefinition): Promise<void> {
+	const currentTables = await getCurrentTables()
+	const currentUdts = await getCurrentUdts()
+
+	for (const tableName of Object.keys(newSchema)) {
+		const tableSchema = newSchema[tableName]
+		const columns = tableSchema.columns
+
+		if (currentTables.includes(tableName)) {
+			await alterTable(tableName, columns, currentUdts)
+		} else {
+			await createTable(tableName, columns, currentUdts)
+		}
+	}
+}
+
+async function getCurrentTables(): Promise<string[]> {
+	const result = await executeQuery('SELECT table_name FROM system_schema.tables')
+	return result.rows.map((row: any) => row.table_name)
+}
+
+async function getCurrentUdts(): Promise<Record<string, any>> {
+	const result = await executeQuery(
+		'SELECT type_name, field_names, field_types FROM system_schema.types'
+	)
+	const udts: Record<string, any> = {}
+	result.rows.forEach((row: any) => {
+		const fields: Record<string, string> = {}
+		row.field_names.forEach((name: string, index: number) => {
+			fields[name] = row.field_types[index]
+		})
+		udts[row.type_name] = fields
+	})
+	return udts
+}
+
+async function createTable(
+	tableName: string,
+	columns: Record<string, ColumnDefinition | string>,
+	currentUdts: Record<string, any>
+): Promise<void> {
+	const columnDefinitions = []
+	const primaryKeys: string[] = []
+	const indexes: string[] = []
+
+	for (const columnName in columns) {
+		const columnDefinition = columns[columnName]
+		const columnType =
+			typeof columnDefinition === 'string' ? columnDefinition : columnDefinition.type
+
+		if (typeof columnType === 'object' && !Array.isArray(columnType)) {
+			const udtName = await getOrCreateUdt(columnType, currentUdts)
+			columnDefinitions.push(
+				`${columnName} ${columnDefinition?.frozen ? `frozen<${udtName}>` : udtName}`
+			)
+		} else if (Array.isArray(columnType)) {
+			const udtName = await getOrCreateUdt(columnType[0], currentUdts)
+			columnDefinitions.push(`${columnName} list<frozen<${udtName}>>`)
+		} else {
+			columnDefinitions.push(`${columnName} ${columnType}`)
+		}
+
+		if (typeof columnDefinition === 'object' && columnDefinition.isPrimaryKey) {
+			primaryKeys.push(columnName)
+		}
+
+		if (typeof columnDefinition === 'object' && columnDefinition.index) {
+			indexes.push(columnName)
+		}
+	}
+
+	const primaryKeyClause = primaryKeys.length > 0 ? `, PRIMARY KEY (${primaryKeys.join(', ')})` : ''
+	const createTableQuery = `CREATE TABLE ${tableName} (${columnDefinitions.join(', ')}${primaryKeyClause})`
+	console.log(`Creating table ${tableName} with query: ${createTableQuery}`)
+	await executeQuery(createTableQuery)
+
+	for (const index of indexes) {
+		const createIndexQuery = `CREATE INDEX ON ${tableName} (${index})`
+		console.log(`Creating index on ${index} with query: ${createIndexQuery}`)
+		await executeQuery(createIndexQuery)
+	}
+}
+
+async function alterTable(
+	tableName: string,
+	columns: Record<string, ColumnDefinition | string>,
+	currentUdts: Record<string, any>
+  ): Promise<void> {
+	const currentColumns = await getCurrentColumns(tableName);
+	const alterQueries: string[] = [];
+	const dropQueries: string[] = [];
+	const indexes: string[] = [];
+  
+	for (const columnName in columns) {
+	  const columnDefinition = columns[columnName];
+	  let columnType = typeof columnDefinition === 'string' ? columnDefinition : columnDefinition.type;
+  
+	  // If it's a complex object type, process it to get or create a UDT
+	  if (typeof columnType === 'object' && !Array.isArray(columnType)) {
+		const udtName = await getOrCreateUdt(columnType, currentUdts);
+		columnType = columnDefinition.frozen ? `frozen<${udtName}>` : udtName;
+	  } else if (Array.isArray(columnType)) {
+		const udtName = await getOrCreateUdt(columnType[0], currentUdts);
+		columnType = `list<frozen<${udtName}>>`;
+	  }
+  
+	  // Handle current columns
+	  if (currentColumns[columnName]) {
+		const currentColumnType = currentColumns[columnName];
+		if (currentColumnType !== columnType) {
+		  console.warn(`Column type mismatch for ${columnName} in ${tableName}. Current type: ${currentColumnType}, new type: ${columnType}`);
+		  alterQueries.push(`ALTER TABLE ${tableName} ALTER ${columnName} TYPE ${columnType}`);
+		}
+	  } else {
+		alterQueries.push(`ALTER TABLE ${tableName} ADD ${columnName} ${columnType}`);
+		if (typeof columnDefinition === 'object' && columnDefinition.index) {
+		  indexes.push(columnName);
+		}
+	  }
+	}
+  
+	for (const currentColumn in currentColumns) {
+	  if (!columns[currentColumn]) {
+		dropQueries.push(`ALTER TABLE ${tableName} DROP ${currentColumn}`);
+	  }
+	}
+  
+	for (const query of alterQueries) {
+	  console.log(`Altering table ${tableName} with query: ${query}`);
+	  await executeQuery(query);
+	}
+  
+	for (const query of dropQueries) {
+	  console.log(`Dropping column from table ${tableName} with query: ${query}`);
+	  await executeQuery(query);
+	}
+  
+	for (const index of indexes) {
+	  const createIndexQuery = `CREATE INDEX ON ${tableName} (${index})`;
+	  console.log(`Creating index on ${index} with query: ${createIndexQuery}`);
+	  await executeQuery(createIndexQuery);
+	}
+  }
+  
+async function getCurrentColumns(tableName: string): Promise<Record<string, string>> {
+	const result = await executeQuery(
+		'SELECT column_name, type FROM system_schema.columns WHERE table_name = ?',
+		[tableName]
+	)
+	const columns: Record<string, string> = {}
+	result.rows.forEach((row: any) => {
+		columns[row.column_name] = row.type
+	})
+	return columns
+}
+
+async function getOrCreateUdt(
+	udtDefinition: object,
+	currentUdts: Record<string, any>
+): Promise<string> {
+	const nestedUdtPromises = []
+
+	for (const [fieldName, fieldType] of Object.entries(udtDefinition)) {
+		if (typeof fieldType === 'object' && !Array.isArray(fieldType)) {
+			nestedUdtPromises.push(
+				getOrCreateUdt(fieldType, currentUdts).then(udtName => {
+					;(udtDefinition as any)[fieldName] = udtName
+				})
+			)
+		} else if (Array.isArray(fieldType)) {
+			nestedUdtPromises.push(
+				getOrCreateUdt(fieldType[0], currentUdts).then(udtName => {
+					;(udtDefinition as any)[fieldName] = `list<frozen<${udtName}>>`
+				})
+			)
+		}
+	}
+
+	await Promise.all(nestedUdtPromises)
+
+	const udtName = findMatchingUdt(udtDefinition, currentUdts)
+	if (udtName) {
+		return udtName
+	}
+
+	const newUdtName = generateUdtName(udtDefinition)
+	await createUdt(newUdtName, udtDefinition)
+	currentUdts[newUdtName] = udtDefinition
+	return newUdtName
+}
+
+function findMatchingUdt(udtDefinition: object, currentUdts: Record<string, any>): string | null {
+	for (const [udtName, fields] of Object.entries(currentUdts)) {
+		if (areFieldsEqual(fields, udtDefinition)) {
+			return udtName
+		}
+	}
+	return null
+}
+
+function areFieldsEqual(fields1: Record<string, any>, fields2: Record<string, any>): boolean {
+	const keys1 = Object.keys(fields1).sort()
+	const keys2 = Object.keys(fields2).sort()
+	if (keys1.length !== keys2.length) {
+		return false
+	}
+
+	return keys1.every(key => fields1[key] === fields2[key])
+}
+
+function generateUdtName(udtDefinition: object): string {
+	return `udt_${Object.keys(udtDefinition).join('_').toLowerCase()}`
+}
+
+async function createUdt(name: string, udtDefinition: object): Promise<void> {
+	const fieldDefinitions = Object.entries(udtDefinition).map(
+		([fieldName, fieldType]) => `${fieldName} ${fieldType}`
+	)
+	const createUdtQuery = `CREATE TYPE IF NOT EXISTS ${name} (${fieldDefinitions.join(', ')})`
+	console.log(`Creating UDT ${name} with query: ${createUdtQuery}`)
+	await executeQuery(createUdtQuery)
+}
+
 const db = {
 	create,
 	findUnique,
 	findMany,
 	update,
 	delete: remove,
-	deleteMany
+	deleteMany,
+	schema
 }
 
 export default db
