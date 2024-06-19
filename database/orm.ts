@@ -1,22 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { executeQuery } from './db'
 import { types as CassandraTypes } from 'cassandra-driver'
-import type { User } from '../src/types/user'
-import type { Blog } from '../src/types/blog'
-import type { Video } from '../src/types/video'
-import type { Post } from '../src/types/post'
-import type { Message } from '../src/types/msg'
-import type { History } from '../src/types/history'
-import type { SearchHistory } from '../src/types/searchHistory'
+import type { Tables } from '../src/types/schema'
 
 type TableMap = {
-	users: User
-	blogs: Blog
-	videos: Video
-	posts: Post
-	messages: Message
-	history: History
-	search_history: SearchHistory
+	[K in keyof Tables]: Tables[K]
 }
 
 type WhereClause<T> = Partial<Record<keyof T, any>>
@@ -358,63 +346,65 @@ async function alterTable(
 	tableName: string,
 	columns: Record<string, ColumnDefinition | string>,
 	currentUdts: Record<string, any>
-  ): Promise<void> {
-	const currentColumns = await getCurrentColumns(tableName);
-	const alterQueries: string[] = [];
-	const dropQueries: string[] = [];
-	const indexes: string[] = [];
-  
+): Promise<void> {
+	const currentColumns = await getCurrentColumns(tableName)
+	const alterQueries: string[] = []
+	const dropQueries: string[] = []
+	const indexes: string[] = []
+
 	for (const columnName in columns) {
-	  const columnDefinition = columns[columnName];
-	  let columnType = typeof columnDefinition === 'string' ? columnDefinition : columnDefinition.type;
-  
-	  // If it's a complex object type, process it to get or create a UDT
-	  if (typeof columnType === 'object' && !Array.isArray(columnType)) {
-		const udtName = await getOrCreateUdt(columnType, currentUdts);
-		columnType = columnDefinition.frozen ? `frozen<${udtName}>` : udtName;
-	  } else if (Array.isArray(columnType)) {
-		const udtName = await getOrCreateUdt(columnType[0], currentUdts);
-		columnType = `list<frozen<${udtName}>>`;
-	  }
-  
-	  // Handle current columns
-	  if (currentColumns[columnName]) {
-		const currentColumnType = currentColumns[columnName];
-		if (currentColumnType !== columnType) {
-		  console.warn(`Column type mismatch for ${columnName} in ${tableName}. Current type: ${currentColumnType}, new type: ${columnType}`);
-		  alterQueries.push(`ALTER TABLE ${tableName} ALTER ${columnName} TYPE ${columnType}`);
+		const columnDefinition = columns[columnName]
+		let columnType = typeof columnDefinition === 'string' ? columnDefinition : columnDefinition.type
+
+		// If it's a complex object type, process it to get or create a UDT
+		if (typeof columnType === 'object' && !Array.isArray(columnType)) {
+			const udtName = await getOrCreateUdt(columnType, currentUdts)
+			columnType = columnDefinition.frozen ? `frozen<${udtName}>` : udtName
+		} else if (Array.isArray(columnType)) {
+			const udtName = await getOrCreateUdt(columnType[0], currentUdts)
+			columnType = `list<frozen<${udtName}>>`
 		}
-	  } else {
-		alterQueries.push(`ALTER TABLE ${tableName} ADD ${columnName} ${columnType}`);
-		if (typeof columnDefinition === 'object' && columnDefinition.index) {
-		  indexes.push(columnName);
+
+		// Handle current columns
+		if (currentColumns[columnName]) {
+			const currentColumnType = currentColumns[columnName]
+			if (currentColumnType !== columnType) {
+				console.warn(
+					`Column type mismatch for ${columnName} in ${tableName}. Current type: ${currentColumnType}, new type: ${columnType}`
+				)
+				alterQueries.push(`ALTER TABLE ${tableName} ALTER ${columnName} TYPE ${columnType}`)
+			}
+		} else {
+			alterQueries.push(`ALTER TABLE ${tableName} ADD ${columnName} ${columnType}`)
+			if (typeof columnDefinition === 'object' && columnDefinition.index) {
+				indexes.push(columnName)
+			}
 		}
-	  }
 	}
-  
+
 	for (const currentColumn in currentColumns) {
-	  if (!columns[currentColumn]) {
-		dropQueries.push(`ALTER TABLE ${tableName} DROP ${currentColumn}`);
-	  }
+		if (!columns[currentColumn]) {
+			dropQueries.push(`ALTER TABLE ${tableName} DROP ${currentColumn}`)
+		}
 	}
-  
+
 	for (const query of alterQueries) {
-	  console.log(`Altering table ${tableName} with query: ${query}`);
-	  await executeQuery(query);
+		console.log(`Altering table ${tableName} with query: ${query}`)
+		await executeQuery(query)
 	}
-  
+
 	for (const query of dropQueries) {
-	  console.log(`Dropping column from table ${tableName} with query: ${query}`);
-	  await executeQuery(query);
+		console.log(`Dropping column from table ${tableName} with query: ${query}`)
+		await executeQuery(query)
 	}
-  
+
 	for (const index of indexes) {
-	  const createIndexQuery = `CREATE INDEX ON ${tableName} (${index})`;
-	  console.log(`Creating index on ${index} with query: ${createIndexQuery}`);
-	  await executeQuery(createIndexQuery);
+		const createIndexQuery = `CREATE INDEX ON ${tableName} (${index})`
+		console.log(`Creating index on ${index} with query: ${createIndexQuery}`)
+		await executeQuery(createIndexQuery)
 	}
-  }
-  
+}
+
 async function getCurrentColumns(tableName: string): Promise<Record<string, string>> {
 	const result = await executeQuery(
 		'SELECT column_name, type FROM system_schema.columns WHERE table_name = ?',
