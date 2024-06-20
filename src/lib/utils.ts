@@ -1,3 +1,5 @@
+import crypto from 'crypto'
+
 function abbreviateNumber(value: number) {
 	const units = ['', 'K', 'M', 'B', 'T', 'Q', 'QQ']
 	const magnitude = Math.floor(Math.log10(Math.abs(value)) / 3)
@@ -60,4 +62,19 @@ function removeHtmlTags(text: string): string {
 	return text.replace(/<[^>]*>?/gm, '')
 }
 
-export { abbreviateNumber, formatTime, removeHtmlTags }
+const encrypt = (text: string, secretKey: string) => {
+	try {
+		const iv = crypto.randomBytes(16)
+		const key = crypto.createHash('sha256').update(secretKey).digest('base64').substr(0, 32)
+		const cipher = crypto.createCipheriv('aes-256-cbc', key, iv)
+
+		let encrypted = cipher.update(text)
+		encrypted = Buffer.concat([encrypted, cipher.final()])
+		return iv.toString('hex') + ':' + encrypted.toString('hex')
+	} catch (error) {
+		console.log(error)
+	}
+}
+
+
+export { abbreviateNumber, formatTime, removeHtmlTags, encrypt }
