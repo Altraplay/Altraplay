@@ -76,5 +76,21 @@ const encrypt = (text: string, secretKey: string) => {
 	}
 }
 
+const decrypt = (encryptedText: string, secretKey: string) => {
+	try {
+		const textParts = encryptedText.split(':')
+		const iv = Buffer.from(textParts.shift(), 'hex')
 
-export { abbreviateNumber, formatTime, removeHtmlTags, encrypt }
+		const encryptedData = Buffer.from(textParts.join(':'), 'hex')
+		const key = crypto.createHash('sha256').update(secretKey).digest('base64').substr(0, 32)
+		const decipher = crypto.createDecipheriv('aes-256-cbc', key, iv)
+
+		const decrypted = decipher.update(encryptedData)
+		const decryptedText = Buffer.concat([decrypted, decipher.final()])
+		return decryptedText.toString()
+	} catch (error) {
+		console.log(error)
+	}
+}
+
+export { abbreviateNumber, formatTime, removeHtmlTags, encrypt, decrypt }
