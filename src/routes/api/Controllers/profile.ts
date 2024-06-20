@@ -19,16 +19,15 @@ const route = new Elysia({ prefix: '/profile/:username' })
 					'profile_picture',
 					'banner',
 					'level',
-					'role',
 					'points',
-					'needs',
+					'needs_for_next_level',
 					'links',
 					'verified',
 					'skills',
 					'languages',
 					'team',
 					'is_email_verified',
-					'joined'
+					'joined_at'
 				]
 			})
 
@@ -52,8 +51,8 @@ const route = new Elysia({ prefix: '/profile/:username' })
 				const { newUsername, password, bio, skills, languages, links, name, email } = body
 				const user = await db.findUnique({
 					table: 'users',
-                    where: { username, is_email_verified: true},
-                    select: ['id']
+					where: { username, is_email_verified: true },
+					select: ['id']
 				})
 				const token = checkState(body.auth, user?.id)
 
@@ -69,10 +68,10 @@ const route = new Elysia({ prefix: '/profile/:username' })
 							bio,
 							links,
 							skills,
-							language: languages,
+							languages,
 							email
 						},
-						where: { id: user?.id}
+						where: { id: user?.id }
 					})
 
 					const token = GenToken({ id: user?.id, verified: true }, '365d')
@@ -118,25 +117,24 @@ const route = new Elysia({ prefix: '/profile/:username' })
 
 				const user = await db.findUnique({
 					table: 'users',
-					where: { username, is_email_verified: true},
+					where: { username, is_email_verified: true },
 					select: ['password', 'id']
 				})
 
 				const token = checkState(body.auth, user?.id)
 
 				if (token?.state === 'Owner' || !user?.id) {
-
-						const correct = await Bun.password.verify(password, user?.password, 'bcrypt')
-						if (correct) {
-							await db.delete({
-								table: 'users',
-								where: { id: user?.id }
-							})
-							set.status = 204
-						} else {
-							set.status = 401
-							return { err: 'Wrong password' }
-						}
+					const correct = await Bun.password.verify(password, user?.password, 'bcrypt')
+					if (correct) {
+						await db.delete({
+							table: 'users',
+							where: { id: user?.id }
+						})
+						set.status = 204
+					} else {
+						set.status = 401
+						return { err: 'Wrong password' }
+					}
 				} else {
 					set.status = 401
 					return { err: 'You are not authorized to delete this profile' }
@@ -159,7 +157,7 @@ const route = new Elysia({ prefix: '/profile/:username' })
 			const blogs = await db.findMany({
 				tables: ['blogs'],
 				where: { blogs: { author: username } },
-				select: { blogs: ['id', 'title', 'cover', 'views', 'published_at'] }
+				select: { blogs: ['id', 'title', 'cover', 'views', 'created_at'] }
 			})
 
 			if (blogs.blogs?.length === 0) {
@@ -180,7 +178,7 @@ const route = new Elysia({ prefix: '/profile/:username' })
 			const videos = await db.findMany({
 				tables: ['videos'],
 				where: { videos: { creator: username } },
-				select: { videos: ['id', 'title', 'cover', 'views', 'published_at'] }
+				select: { videos: ['id', 'title', 'cover', 'views', 'created_at'] }
 			})
 
 			if (videos.videos?.length === 0) {
@@ -199,7 +197,7 @@ const route = new Elysia({ prefix: '/profile/:username' })
 		try {
 			const { posts } = await db.findMany({
 				tables: ['posts'],
-				where: { posts: { owner: username } }
+				where: { posts: { posted_by: username } }
 			})
 
 			if (posts?.length === 0) {

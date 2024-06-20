@@ -14,15 +14,11 @@ const bodySchema = {
 			minLength: 300,
 			error: "Blog's body must be at least 300 characters long"
 		}),
-		tags: t.Array(t.String(), {
+		slashtags: t.Array(t.String(), {
 			maxItems: 30,
 			error: 'You can only add 30 slashtags to the blog'
 		}),
-		categories: t.Array(t.String(), {
-			maxItems: 10,
-			error: 'You cannot add more than 10 categories to your blog'
-		}),
-		visible_to: t.Array(t.String()),
+		visibility: t.Array(t.String()),
 		cover: t.File({
 			maxSize: '50m',
 			type: ['image', 'image/avif', 'image/jpeg', 'image/png', 'image/tiff', 'image/webp']
@@ -38,7 +34,7 @@ const route = new Elysia({ prefix: '/blog' })
 		'/',
 		async ({ body, set, headers }) => {
 			try {
-				const { title, content, tags, categories, visible_to, cover } = body
+				const { title, content, slashtags, visibility, cover } = body
 
 				const token = checkState(headers.authorization.split('Bearer ')[1])
 
@@ -66,18 +62,17 @@ const route = new Elysia({ prefix: '/blog' })
 						await db.create({
 							table: 'blogs',
 							data: {
-								id: randomString(randomInt(20, 52)),
+								id: randomString(randomInt(15, 52)),
 								title,
 								content,
-								tags,
-								categories,
-								visible_to,
+								slashtags,
+								visibility,
 								author: token.id,
 								cover: coverUrl,
-								published_at: new Date(Date.now()),
 								likes: 0,
 								dislikes: 0,
-								views: 0
+								views: 0,
+								created_at: new Date(Date.now())
 							}
 						})
 					}
@@ -97,10 +92,10 @@ const route = new Elysia({ prefix: '/blog' })
 				const blogs = await db.findMany({
 					tables: ['blogs'],
 					where: {
-						blogs: { visible_to: checkState(headers?.authorization)?.id || 'everyone' }
+						blogs: { visibility: [checkState(headers?.authorization)?.id] || ['everyone'] }
 					},
 					select: {
-						blogs: ['id', 'title', 'author', 'cover', 'published_at']
+						blogs: ['id', 'title', 'author', 'cover', 'created_at']
 					}
 				})
 				const list = blogs.blogs?.map(async blog => {
@@ -138,7 +133,7 @@ const route = new Elysia({ prefix: '/blog' })
 					table: 'blogs',
 					where: {
 						id: params.id,
-						visible_to: checkState(headers.authorization)?.id || 'everyone'
+						visibility: checkState(headers.authorization)?.id || 'everyone'
 					}
 				})
 				const author = await db.findUnique({
@@ -178,7 +173,7 @@ const route = new Elysia({ prefix: '/blog' })
 				const token = checkState(headers.authorization, check?.author)
 
 				if (token?.state === 'Owner') {
-					const { title, content, tags, categories, visible_to, cover } = body
+					const { title, content, slashtags, visibility, cover } = body
 					const coverUrl = `${randomString(randomInt(20, 52))}.${cover.name.split('.')[1]}`
 					if (cover) {
 						if (Bun.env.AWS_SECRET_ACCESS_KEY) {
@@ -203,7 +198,7 @@ const route = new Elysia({ prefix: '/blog' })
 					await db.update({
 						table: 'blogs',
 						where: { id: params.id },
-						data: { title, content, tags, categories, visible_to, cover: coverUrl }
+						data: { title, content, slashtags, visibility, cover: coverUrl }
 					})
 
 					set.status = 204
@@ -508,14 +503,14 @@ const route = new Elysia({ prefix: '/blog' })
 				const user = await db.findUnique({
 					table: 'users',
 					where: { id: checkState(headers?.authorization)?.id || '' },
-					select: ['id', 'role']
+					select: ['id', 'roles']
 				})
 				const verify = checkState(headers?.authorization, user?.id)
 				if (
 					verify?.state === 'Owner' ||
-					user?.role === 'Admin' ||
-					user?.role === 'Super Admin' ||
-					user?.role === 'Moderator'
+					user?.roles.includes('Admin') ||
+					user?.roles.includes('Super Admin') ||
+					user?.roles.includes('Moderator')
 				) {
 					const blog = await db.findUnique({
 						table: 'blogs',

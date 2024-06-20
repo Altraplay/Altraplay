@@ -9,7 +9,7 @@ import { serverErr } from '$lib/constant'
 const route = new Elysia({ prefix: '/auth' })
 	.post(
 		'/sign-up',
-		async ({ body, set }) => {
+		async ({ body, set, headers }) => {
 			try {
 				// eslint-disable-next-line prefer-const
 				let { username, email, password, name } = body
@@ -78,18 +78,25 @@ const route = new Elysia({ prefix: '/auth' })
 						password: hash,
 						name: name as string,
 						email,
-						verification_token: token,
-						followers: 0,
+						otp: token,
+						followers: [],
 						level: 'Silent Soul',
 						points: 0,
-						needs: 500,
+						needs_for_next_level: '500',
 						is_email_verified: false,
-						only_visible_to: 'everyone',
-						role: 'User',
+						visibility: ['public'],
+						roles: ['User'],
 						verified: false,
 						profile_picture: '',
 						banner: '',
-						joined: new Date()
+						collect_history: true,
+						logged_in_devices: [
+							{
+								name: headers.useragent,
+								ip: '' // TODO
+							}
+						],
+						joined_at: new Date(Date.now())
 					}
 				})
 
@@ -172,7 +179,7 @@ const route = new Elysia({ prefix: '/auth' })
 
 						await db.update({
 							table: 'users',
-							data: { verification_token: token },
+							data: { otp: token },
 							where: { email: email.toLowerCase().replaceAll(' ', '') }
 						})
 
@@ -243,11 +250,11 @@ const route = new Elysia({ prefix: '/auth' })
 					const user = await db.findUnique({
 						table: 'users',
 						where: { id: token.id },
-						select: ['username', 'verification_token', 'password', 'id']
+						select: ['username', 'otp', 'password', 'id']
 					})
 
 					if (user) {
-						if (query.token === user.verification_token) {
+						if (query.token === user.otp) {
 							const matchID = checkState(query.token, user.id)
 
 							if (matchID?.state === 'Owner') {
@@ -302,7 +309,7 @@ const route = new Elysia({ prefix: '/auth' })
 
 					await db.update({
 						table: 'users',
-						data: { verification_token: token },
+						data: { otp: token },
 						where: { id: user.id, is_email_verified: true }
 					})
 
@@ -362,16 +369,16 @@ const route = new Elysia({ prefix: '/auth' })
 					const user = await db.findUnique({
 						table: 'users',
 						where: { id: tokenData.id, is_email_verified: true },
-						select: ['verification_token', 'id']
+						select: ['otp', 'id']
 					})
 
-					if (user && token === user.verification_token) {
+					if (user && token === user.otp) {
 						const hash = await Bun.password.hash(newPassword, { algorithm: 'bcrypt', cost: 10 })
 						const newToken = GenToken({ id: user.id, verified: true }, '365d')
 
 						await db.update({
 							table: 'users',
-							data: { password: hash, verification_token: null },
+							data: { password: hash, otp: null },
 							where: { id: tokenData.id, is_email_verified: true }
 						})
 

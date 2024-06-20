@@ -16,7 +16,7 @@ const route = new Elysia({ prefix: '/post' }).post(
 					id: token?.id,
 					is_email_verified: true
 				},
-                select: ['only_visible_to']
+				select: ['visibility']
 			})
 			if (user) {
 				const url = `${randomString(randomInt(5, 62))}.${body.picture.name.split('.')[1]}`
@@ -37,12 +37,12 @@ const route = new Elysia({ prefix: '/post' }).post(
 					table: 'posts',
 					data: {
 						id: randomString(randomInt(5, 52)),
-						owner: token?.id,
-						title: body.title,
+						posted_by: token!.id,
+						caption: body.caption,
 						url,
-						tags: body.title.replace(/^[^\/]+/, '').split('/'),
-                        visible_to: user.only_visible_to,
-						published_at: new Date(Date.now())
+						slashtags: body.caption.replace(/^[^\/]+/, '').split('/'),
+						visibility: user.visibility,
+						created_at: new Date(Date.now())
 					}
 				})
 				set.status = 204
@@ -57,7 +57,7 @@ const route = new Elysia({ prefix: '/post' }).post(
 	},
 	{
 		body: t.Object({
-			title: t.String(),
+			caption: t.String(),
 			picture: t.File()
 		})
 	}
