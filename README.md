@@ -69,7 +69,6 @@ And hold billions of users at the same time.
 - AWS as Cloud Provider - [Docs](https://docs.aws.amazon.com/sdk-for-javascript/v3/developer-guide/javascript_code_examples_categorized.html)
 - Resend as an SMTP Server Provider fow now - [Docs](https://resend.com/docs)
 - GSAP for Complex Animations - [Docs](https://gsap.com/docs/v3/)
-- Melt UI as a Component Library - [Docs](https://melt-ui.com/docs/)
 - JWT for authentication/authorization
 - Tailwind CSS for quick styling - [Docs](https://tailwindcss.com/docs)
 
