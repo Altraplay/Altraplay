@@ -7,7 +7,11 @@ type TableMap = {
 	[K in keyof Tables]: Tables[K]
 }
 
-type WhereClause<T> = Partial<Record<keyof T, any>>
+type WhereCondition<T> = {
+	value: any
+	operator?: '=' | 'CONTAINS' | 'IN' | '>' | '<' | '>=' | '<='
+} | any
+type WhereClause<T> = Partial<Record<keyof T, WhereCondition<T[keyof T]> | T[keyof T]>>
 type SelectFields<T> = (keyof T)[] | ['*']
 
 type SelectedFields<T, U extends SelectFields<T>> = U extends ['*'] ? T : Pick<T, U[number]>
@@ -21,12 +25,28 @@ interface FindUniqueParams<T extends keyof TableMap, U extends SelectFields<Tabl
 	table: T
 	where: WhereClause<TableMap[T]>
 	select?: U
+	orderBy?: Partial<Record<keyof TableMap[T], 'ASC' | 'DESC'>>
 }
 
-interface FindManyParams<T extends keyof TableMap, U extends SelectFields<TableMap[T]> = ['*']> {
+interface FindManyParamsSingle<
+	T extends keyof TableMap,
+	U extends SelectFields<TableMap[T]> = ['*']
+> {
+	table: T
+	where?: WhereClause<TableMap[T]>
+	select?: U
+	orderBy?: Partial<Record<keyof TableMap[T], 'ASC' | 'DESC'>>
+	limit?: number
+}
+
+interface FindManyParamsMulti<
+	T extends keyof TableMap,
+	U extends SelectFields<TableMap[T]> = ['*']
+> {
 	tables: T[]
 	where?: { [K in T]?: WhereClause<TableMap[K]> }
 	select?: { [K in T]?: U }
+	orderBy?: { [K in T]?: Partial<Record<keyof TableMap[K], 'ASC' | 'DESC'>> }
 	limit?: number
 }
 
@@ -85,69 +105,164 @@ function rowToPlainObject<T>(row: CassandraTypes.Row): T {
 async function findUnique<T extends keyof TableMap, U extends SelectFields<TableMap[T]> = ['*']>({
 	table,
 	where,
-	select
+	select,
+	orderBy
 }: FindUniqueParams<T, U>): Promise<SelectedFields<TableMap[T], U> | null> {
 	try {
-		const selectClause = select ? (select.includes('*') ? '*' : select.join(', ')) : '*'
+		const selectClause = select ? (select.includes('*') ? ['*'] : select) : ['*']
 
 		const whereEntries = Object.entries(where)
 		const whereClause =
 			whereEntries.length > 0
-				? ' WHERE ' + whereEntries.map(([field]) => `${field} = ?`).join(' AND ')
+				? ' WHERE ' +
+					whereEntries
+						.map(([field, condition]) => {
+							if (typeof condition === 'object' && condition?.operator) {
+								return `${field} ${condition?.operator} ?`
+							}
+							return Array.isArray(condition) ? `${field} CONTAINS ?` : `${field} = ?`
+						})
+						.join(' AND ')
 				: ''
-		const values = whereEntries.map(([, value]) => value)
+		const values = Object.values(where).map(condition =>
+			typeof condition === 'object' ? condition?.value : condition
+		)
 
-		const query = `SELECT ${selectClause} FROM ${table}${whereClause} LIMIT 1`
+		const orderByFields = orderBy ? Object.entries(orderBy) : []
+
+		const query = `SELECT ${selectClause.join(', ')} FROM ${table}${whereClause} LIMIT 1`
 		const result = await executeQuery(query, values, !!whereClause)
+		let rows = result.rows.map(row => rowToPlainObject<SelectedFields<TableMap[T], U>>(row))
 
-		if (result.rows.length === 0) {
-			return null
+		if (orderByFields.length > 0) {
+			rows.sort((a, b) => {
+				for (const [field, direction] of orderByFields) {
+					if (a[field] < b[field]) return direction === 'ASC' ? -1 : 1		
+					if (a[field] > b[field]) return direction === 'ASC' ? 1 : -1
+				}
+				return 0
+			})
 		}
 
-		return rowToPlainObject<SelectedFields<TableMap[T], U>>(result.rows[0])
+		return rows.length > 0 ? rows[0] : null
 	} catch (error) {
-		console.error(`Error finding unique entry in ${table}:`, error)
+		console.error(`Error finding unique entry in table ${table}:`, error)
 		throw error
 	}
 }
 
 async function findMany<T extends keyof TableMap, U extends SelectFields<TableMap[T]> = ['*']>({
+	table,
 	tables,
 	where,
 	select,
+	orderBy,
 	limit
-}: FindManyParams<T, U>): Promise<{ [K in T]?: SelectedFields<TableMap[K], U>[] }> {
+}: FindManyParamsSingle<T, U> | FindManyParamsMulti<T, U>): Promise<{
+	[K in T]?: SelectedFields<TableMap[K], U>[]
+}> {
 	try {
 		const results: { [K in T]?: SelectedFields<TableMap[K], U>[] } = {}
 
-		for (const table of tables) {
-			const selectClause =
-				select && select[table]
-					? select[table]!.includes('*')
-						? '*'
-						: select[table]!.join(', ')
-					: '*'
+		const getData = async (
+			tableName: T,
+			selectFields: string[],
+			whereClause: string,
+			values: any[],
+			orderByFields: [string, string][],
+			limitClause: string
+		) => {
+			const query = `SELECT ${selectFields.join(', ')} FROM ${tableName}${whereClause}${limitClause}`
+			const result = await executeQuery(query, values, !!whereClause)
+			const rows = result.rows.map(row => rowToPlainObject<SelectedFields<TableMap[T], U>>(row))
+
+			if (orderByFields.length > 0) {
+				rows.sort((a, b) => {
+					for (const [field, direction] of orderByFields) {
+						if (a[field] < b[field]) return direction === 'ASC' ? -1 : 1
+						if (a[field] > b[field]) return direction === 'ASC' ? 1 : -1
+					}
+					return 0
+				})
+			}
+			return rows
+		}
+
+		if (table) {
+			const selectClause = select ? (select.includes('*') ? ['*'] : select) : ['*']
 			const limitClause = limit ? ` LIMIT ${limit}` : ''
 
-			const whereEntries = where && where[table] ? Object.entries(where[table]!) : []
+			const whereEntries = where ? Object.entries(where) : []
 			const whereClause =
 				whereEntries.length > 0
-					? ' WHERE ' + whereEntries.map(([field]) => `${field} = ?`).join(' AND ')
+					? ' WHERE ' +
+						whereEntries
+							.map(([field, condition]) => {
+								if (typeof condition === 'object' && condition?.operator) {
+									return `${field} ${condition?.operator} ?`
+								}
+								return Array.isArray(condition) ? `${field} CONTAINS ?` : `${field} = ?`
+							})
+							.join(' AND ')
 					: ''
-			const values =
-				where && where[table] ? Object.values(where[table]!).map(condition => condition) : []
+			const values = where
+				? Object.values(where).map(condition =>
+						typeof condition === 'object' ? condition?.value : condition
+					)
+				: []
 
-			const query = `SELECT ${selectClause} FROM ${table}${whereClause}${limitClause}`
-			const result = await executeQuery(query, values, !!whereClause)
+			const orderByFields = orderBy ? Object.entries(orderBy) : []
 
-			results[table] = result.rows.map(row =>
-				rowToPlainObject<SelectedFields<TableMap[typeof table], U>>(row)
+			results[table as T] = await getData(
+				table as T,
+				selectClause,
+				whereClause,
+				values,
+				orderByFields,
+				limitClause
 			)
+		} else {
+			for (const table of tables!) {
+				const selectClause =
+					select && select[table] ? (select[table]!.includes('*') ? ['*'] : select[table]!) : ['*']
+				const limitClause = limit ? ` LIMIT ${limit}` : ''
+
+				const whereEntries = where && where[table] ? Object.entries(where[table]!) : []
+				const whereClause =
+					whereEntries.length > 0
+						? ' WHERE ' +
+							whereEntries
+								.map(([field, condition]) => {
+									if (typeof condition === 'object' && condition?.operator) {
+										return `${field} ${condition?.operator} ?`
+									}
+									return Array.isArray(condition) ? `${field} CONTAINS ?` : `${field} = ?`
+								})
+								.join(' AND ')
+						: ''
+				const values =
+					where && where[table]
+						? Object.values(where[table]!).map(condition =>
+								typeof condition === 'object' ? condition?.value : condition
+							)
+						: []
+
+				const orderByFields = orderBy && orderBy[table] ? Object.entries(orderBy[table]!) : []
+
+				results[table] = await getData(
+					table,
+					selectClause,
+					whereClause,
+					values,
+					orderByFields,
+					limitClause
+				)
+			}
 		}
 
 		return results
 	} catch (error) {
-		console.error(`Error finding many entries in tables ${tables.join(', ')}:`, error)
+		console.error(`Error finding many entries in tables ${tables?.join(', ') || table}:`, error)
 		throw error
 	}
 }
@@ -159,15 +274,28 @@ async function update<T extends keyof TableMap>({
 	collectionUpdates
 }: UpdateParams<T>): Promise<void> {
 	try {
-		const setClause = Object.keys(data)
-			.map(key => `${key} = ?`)
-			.join(', ')
+		const setEntries = Object.entries(data)
+		const setClause = setEntries.map(([field]) => `${field} = ?`).join(', ')
+		const values = setEntries.map(([, value]) => value)
+
 		const whereEntries = Object.entries(where)
 		const whereClause =
 			whereEntries.length > 0
-				? ' WHERE ' + whereEntries.map(([field]) => `${field} = ?`).join(' AND ')
+				? ' WHERE ' +
+					whereEntries
+						.map(([field, condition]) => {
+							if (typeof condition === 'object' && condition?.operator) {
+								return `${field} ${condition?.operator} ?`
+							}
+							return `${field} = ?`
+						})
+						.join(' AND ')
 				: ''
-		const values = [...Object.values(data), ...whereEntries.map(([, value]) => value)]
+		values.push(
+			...whereEntries.map(([, condition]) =>
+				typeof condition === 'object' ? condition?.value : condition
+			)
+		)
 
 		const collectionClauses: string[] = []
 		if (collectionUpdates) {
@@ -181,13 +309,18 @@ async function update<T extends keyof TableMap>({
 					values.push(operations.remove)
 				}
 				if (operations.update) {
-					collectionClauses.push(`${field} = ${field} + ?`)
+					const updateEntries = Object.entries(operations.update)
+					collectionClauses.push(
+						`${field} = ${field} + {${updateEntries.map(([k]) => k).join(', ')}}`
+					)
 					values.push(operations.update)
 				}
 			}
 		}
 
-		const query = `UPDATE ${table} SET ${setClause}${collectionClauses.length ? ', ' + collectionClauses.join(', ') : ''}${whereClause}`
+		const query = `UPDATE ${table} SET ${setClause}${
+			collectionClauses.length ? ', ' + collectionClauses.join(', ') : ''
+		}${whereClause}`
 		await executeQuery(query, values)
 	} catch (error) {
 		console.error(`Error updating entry in ${table}:`, error)
@@ -200,9 +333,19 @@ async function remove<T extends keyof TableMap>({ table, where }: DeleteParams<T
 		const whereEntries = Object.entries(where)
 		const whereClause =
 			whereEntries.length > 0
-				? ' WHERE ' + whereEntries.map(([field]) => `${field} = ?`).join(' AND ')
+				? ' WHERE ' +
+					whereEntries
+						.map(([field, condition]) => {
+							if (typeof condition === 'object' && condition?.operator) {
+								return `${field} ${condition?.operator} ?`
+							}
+							return `${field} = ?`
+						})
+						.join(' AND ')
 				: ''
-		const values = whereEntries.map(([, value]) => value)
+		const values = whereEntries.map(([, condition]) =>
+			typeof condition === 'object' ? condition?.value : condition
+		)
 
 		const query = `DELETE FROM ${table}${whereClause}`
 		await executeQuery(query, values)
@@ -219,27 +362,41 @@ async function deleteMany<T extends keyof TableMap>({
 }: DeleteManyParams<T>): Promise<void> {
 	try {
 		for (const table of tables) {
-			if (!where[table]) continue
-			const whereEntries = Object.entries(where[table]!)
+			const whereEntries = where && where[table] ? Object.entries(where[table]!) : []
 			const whereClause =
 				whereEntries.length > 0
-					? ' WHERE ' + whereEntries.map(([field]) => `${field} = ?`).join(' AND ')
+					? ' WHERE ' +
+						whereEntries
+							.map(([field, condition]) => {
+								if (typeof condition === 'object' && condition?.operator) {
+									return `${field} ${condition?.operator} ?`
+								}
+								return `${field} = ?`
+							})
+							.join(' AND ')
 					: ''
-			const values = whereEntries.map(([, value]) => value)
+			const values =
+				where && where[table]
+					? Object.values(where[table]!).map(condition =>
+							typeof condition === 'object' ? condition?.value : condition
+						)
+					: []
 
 			const collectionClauses: string[] = []
 			if (collectionDeletions && collectionDeletions[table]) {
-				for (const [field, elements] of Object.entries(collectionDeletions[table]!)) {
+				for (const [field, deletions] of Object.entries(collectionDeletions[table]!)) {
 					collectionClauses.push(`${field} = ${field} - ?`)
-					values.push(elements)
+					values.push(deletions)
 				}
 			}
 
-			const query = `DELETE FROM ${table}${whereClause}`
+			const query = `DELETE FROM ${table}${whereClause}${
+				collectionClauses.length ? ' AND ' + collectionClauses.join(' AND ') : ''
+			}`
 			await executeQuery(query, values)
 		}
 	} catch (error) {
-		console.error(`Error deleting many entries from tables ${tables.join(', ')}:`, error)
+		console.error(`Error deleting entries from tables ${tables.join(', ')}:`, error)
 		throw error
 	}
 }
@@ -356,7 +513,6 @@ async function alterTable(
 		const columnDefinition = columns[columnName]
 		let columnType = typeof columnDefinition === 'string' ? columnDefinition : columnDefinition.type
 
-		// If it's a complex object type, process it to get or create a UDT
 		if (typeof columnType === 'object' && !Array.isArray(columnType)) {
 			const udtName = await getOrCreateUdt(columnType, currentUdts)
 			columnType = columnDefinition.frozen ? `frozen<${udtName}>` : udtName
@@ -365,7 +521,6 @@ async function alterTable(
 			columnType = `list<frozen<${udtName}>>`
 		}
 
-		// Handle current columns
 		if (currentColumns[columnName]) {
 			const currentColumnType = currentColumns[columnName]
 			if (currentColumnType !== columnType) {
