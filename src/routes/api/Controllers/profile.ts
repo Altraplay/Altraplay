@@ -27,6 +27,7 @@ const route = new Elysia({ prefix: '/profile/:username' })
 					'languages',
 					'team',
 					'is_email_verified',
+					'followers',
 					'joined_at'
 				]
 			})
