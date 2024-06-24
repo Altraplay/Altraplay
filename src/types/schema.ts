@@ -47,7 +47,7 @@ interface User {
 		| 'The Majestic Squad'
 		| 'Technology Demon'
 		| 'Gaming Dragon'
-	needs_for_next_level: string
+	needs_for_next_level: number
 	roles: [
 		'Super Admin' | 'Moderator' | 'Premium User' | 'Diamond User' | 'User' | 'Admin' | 'Advertiser'
 	]

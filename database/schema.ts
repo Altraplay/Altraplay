@@ -40,7 +40,7 @@ async function push() {
 				interests: 'list<text>',
 				points: 'bigint',
 				level: 'text',
-				needs_for_next_level: 'text',
+				needs_for_next_level: 'bigint',
 				roles: 'list<text>',
 				links: 'list<text>',
 				skills: { type: [{ name: 'text', level: 'int' }] },
