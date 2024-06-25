@@ -33,7 +33,23 @@ const route = new Elysia({ prefix: '/profile/:username' })
 			})
 
 			if (user && user.is_email_verified) {
-				return { user }
+				return {
+					username: user.username,
+					name: user.name,
+					bio: user.bio,
+					profile_picture: user.profile_picture,
+					banner: user.banner,
+					level: user.level,
+					points: user.points,
+					needs_for_next_level: user.needs_for_next_level,
+					links: user.links,
+					verified: user.verified,
+					skills: user.skills,
+					languages: user.languages,
+					team: user.team.length,
+					followers: user.followers.length,
+					joined_at: user.joined_at
+				}
 			} else {
 				set.status = 404
 				return { err: 'User not found' }
