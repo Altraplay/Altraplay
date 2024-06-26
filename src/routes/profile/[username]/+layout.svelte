@@ -14,5 +14,5 @@ import Profile from '@Components/ProfileCard.svelte'
 	<div class="m-5 h-[28vh] w-[95vw] z-30 self-center"
 		><img src={data.banner} alt="banner" class="h-full w-full object-cover" /></div>
 <Profile {data} className='ml-12 mt-6' />
-</main>
 <slot/>
+</main>
