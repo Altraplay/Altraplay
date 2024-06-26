@@ -69,45 +69,31 @@ const route = new Elysia({ prefix: '/user' })
 			})
 		}
 	)
-	.post(
-		'/checktoken',
-		async ({ headers, set, body }) => {
-			try {
-				const isCorrect = checkState(headers.Authorization.replace('Bearer ', ''), body?.id)
-				if (isCorrect?.state === 'LoggedIn' || isCorrect?.state === 'Owner') {
-					const doUserExist = await db.findMany({
-						tables: ['users'],
-						where: { users: { id: isCorrect.id } },
-						select: { users: ['is_email_verified'] }
-					})
-
-					if (doUserExist?.users?.length > 0 && doUserExist?.users[0]?.is_email_verified) {
-						return isCorrect
-					} else {
-						set.status = 400
-						return { err: 'User does not exist' }
-					}
-				} else {
-					set.status = 400
-					return { err: 'Please login' }
-				}
-			} catch (e) {
-				set.status = 500
-				pushLogs(`Error checking token: ${e}`)
-				return { err: serverErr }
-			}
-		},
-		{
-			headers: t.Object({
-				Authorization: t.String()
-			}),
-			body: t.Optional(
-				t.Object({
-					id: t.String()
+	.post('/check-token-and-get-info', async ({ cookie: { auth }, set }) => {
+		console.log(auth.value)
+		try {
+			const isCorrect = checkState(auth?.value)
+			if (isCorrect?.state === 'LoggedIn' || isCorrect?.state === 'Owner') {
+				const user = await db.findUnique({
+					table: 'users',
+					where: { id: isCorrect.id },
+					select: ['username', 'name', 'profile_picture', 'following', 'notifications', 'verified']
 				})
-			)
+
+				if (user) {
+					return { state: isCorrect, userData: user }
+				} else {
+					return isCorrect
+				}
+			} else {
+				return isCorrect
+			}
+		} catch (e) {
+			set.status = 500
+			pushLogs(`Error checking token: ${e}`)
+			return { err: serverErr }
 		}
-	)
+	})
 	.get('/count', async ({ set }) => {
 		try {
 			const usersCount = await db.findMany({
