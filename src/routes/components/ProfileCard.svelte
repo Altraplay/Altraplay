@@ -24,9 +24,10 @@
 
 <section
 	class="flex max-w-[280px] flex-col items-center justify-center gap-[15px] rounded-lg bg-highlight-1 p-4 {className}">
-	<div class="-mt-[785px] w-[235px] absolute blur-xl"><img src={data.profile_picture} alt="Background" /></div>
 	<!-- svelte-ignore a11y-img-redundant-alt -->
-	<div class="-mt-[65px] w-[235px] z-50"><img src={data.profile_picture} alt="Profile Picture" /></div>	
+	<div class="-mt-[65px] w-[235px]">
+		<img src={data.profile_picture} alt="Background" class="absolute w-[245px] blur-lg" />
+		<img src={data.profile_picture} alt="Profile Picture" class="relative z-50" /></div>
 	<div class="flex items-center justify-center gap-[3px]">
 		<h3>{data.name}</h3>
 		{#if data.verified}
@@ -43,7 +44,7 @@
 			{@html data.bio}
 		</p>
 	{/if}
-	{#if data.links.includes('http') || data.links.includes('.')}
+	{#if data.links}
 		<b class="mr-auto">Links</b>
 		{#each data.links as link}
 			<a href={link} target="_blank" class="mr-auto flex gap-2 pt-2"
