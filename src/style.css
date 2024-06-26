@@ -98,12 +98,11 @@ ol ol {
 }
 img {
 	border-radius: 12px;
-	transition: all 0.3s;
+	transition: all 0.3s ease-in-out;
 }
 img:hover {
-	scale: 1.05;
+	scale: 1.03;
 	border-radius: 5px;
-	z-index: 35;
 }
 form,
 input,
