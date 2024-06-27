@@ -1,18 +1,12 @@
 <script>
-   export let width = 15
-   export let height = 15
-   export let className = ''
+	export let size = 15
+	export let className = ''
 </script>
-<svg
-	fill="none"
-	{height}
-	{width}
-	viewBox="0 0 24 24"
-	xmlns="http://www.w3.org/2000/svg"
-	class="{className}">
-	<path
-		clip-rule="evenodd"
-		d="M1 12C1 5.92487 5.92487 1 12 1C18.0751 1 23 5.92487 23 12C23 18.0751 18.0751 23 12 23C5.92487 23 1 18.0751 1 12ZM11.2071 16.2071L18.2071 9.20711L16.7929 7.79289L10.5 14.0858L7.20711 10.7929L5.79289 12.2071L9.79289 16.2071C9.98043 16.3946 10.2348 16.5 10.5 16.5C10.7652 16.5 11.0196 16.3946 11.2071 16.2071Z"
-		fill-rule="evenodd"
-		class="fill-primary" />
-</svg>
+
+<div data-tooltip="Verified" aria-label="Verified">
+	<svg class="fill-primary {className}" height={size} role="img" viewBox="0 0 40 40" width={size}
+		><path
+			d="M19.998 3.094 14.638 0l-2.972 5.15H5.432v6.354L0 14.64 3.094 20 0 25.359l5.432 3.137v5.905h5.975L14.638 40l5.36-3.094L25.358 40l3.232-5.6h6.162v-6.01L40 25.359 36.905 20 40 14.641l-5.248-3.03v-6.46h-6.419L25.358 0l-5.36 3.094Zm7.415 11.225 2.254 2.287-11.43 11.5-6.835-6.93 2.244-2.258 4.587 4.581 9.18-9.18Z"
+			fill-rule="evenodd"></path
+		></svg>
+</div>
