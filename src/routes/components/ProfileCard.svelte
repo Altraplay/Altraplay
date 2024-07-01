@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { enhance } from '$app/forms'
 	import { abbreviateNumber, formatTime } from '$lib/utils'
 	import Button from '@Components/Button.svelte'
 	import VerifiedIcon from '@Components/icons/Verified.svelte'
@@ -37,7 +38,11 @@
 	<b class="-mt-5 text-lg capitalize text-slate-400">{data.username}</b>
 	<b>{abbreviateNumber(data.followers)}</b>
 	<b class="-mt-3 text-slate-400">Followers</b>
-	<Button label="Follow" className="w-[13rem]" />
+	<form action="/api/profile/{data.username}/follow" method="POST" use:enhance>
+		<Button label="Follow" className="w-[13rem]" type="submit" /></form>
+	<a href="/profile/{data.username}/message">
+		<Button label="Message" className="w-[13rem]" variant="secondary" />
+	</a>
 	{#if data.bio}
 		<b class="mr-auto">Bio:</b>
 		<p class="-mt-2 mr-auto line-clamp-2 text-base">
