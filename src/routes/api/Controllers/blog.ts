@@ -89,29 +89,23 @@ const route = new Elysia({ prefix: '/blog' })
 		'/',
 		async ({ set, headers }) => {
 			try {
-				const blogs = await db.findMany({
-					tables: ['blogs'],
-					where: {
-						blogs: { visibility: [checkState(headers?.authorization)?.id] || ['everyone'] }
-					},
-					select: {
-						blogs: ['id', 'title', 'author', 'cover', 'created_at']
-					}
+				const { blogs } = await db.findMany({
+					table: 'blogs',
+					select: ['id', 'title', 'author', 'views', 'cover', 'created_at']
 				})
-				const list = blogs.blogs?.map(async blog => {
-					const author = (
-						await db.findMany({
-							tables: ['users'],
-							where: {
-								users: { is_email_verified: true, id: blog.author }
-							},
-							select: {
-								users: ['username', 'name', 'profile_picture', 'verified']
-							}
+
+				const list = await Promise.all(
+					blogs?.map(async blog => {
+						const author = await db.findUnique({
+							table: 'users',
+							where: { is_email_verified: true, id: blog.author },
+							select: ['username', 'name', 'profile_picture', 'verified']
 						})
-					).users
-					return { ...blog, author }
-				})
+
+						return { ...blog, author }
+					})
+				)
+
 				return list
 			} catch (e) {
 				pushLogs(`Failed to retrieve all blog posts ${e}`)
