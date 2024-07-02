@@ -91,7 +91,13 @@ const route = new Elysia({ prefix: '/blog' })
 			try {
 				const { blogs } = await db.findMany({
 					table: 'blogs',
-					select: ['id', 'title', 'author', 'views', 'cover', 'created_at']
+					select: ['id', 'title', 'author', 'views', 'cover', 'created_at'],
+					where: {
+						visibility: {
+                            value: checkState(headers?.authorization || '') || 'public',
+                            operator: 'CONTAINS'
+                        }
+					}
 				})
 
 				const list = await Promise.all(
@@ -127,21 +133,26 @@ const route = new Elysia({ prefix: '/blog' })
 					table: 'blogs',
 					where: {
 						id: params.id,
-						visibility: checkState(headers.authorization)?.id || 'everyone'
+						visibility: {
+							value: checkState(headers?.authorization || '') || 'public',
+							operator: 'CONTAINS'
+						}
 					}
 				})
-				const author = await db.findUnique({
-					table: 'users',
-					where: {
-						id: blog?.author,
-						is_email_verified: true
-					},
-					select: ['username', 'name', 'profile_picture', 'verified', 'followers']
-				})
-				if (!blog) {
+				if (blog) {
+					const author = await db.findUnique({
+						table: 'users',
+						where: {
+							id: blog?.author,
+							is_email_verified: true
+						},
+						select: ['username', 'name', 'profile_picture', 'verified', 'followers']
+					})
+					return {...blog, author}
+				} else {
 					set.status = 404
 					return { err: "This Blog doesn't exist" }
-				} else return { ...blog, author }
+				}
 			} catch (e) {
 				set.status = 500
 				pushLogs(`Error fetching blog by id: ${params.id}, error: ${e}`)
@@ -441,7 +452,7 @@ const route = new Elysia({ prefix: '/blog' })
 			try {
 				const user = await db.findUnique({
 					table: 'users',
-					where: { id: checkState(headers?.authorization)?.id || '' },
+					where: { id: checkState(headers?.authorization || '')?.id || '' },
 					select: ['id']
 				})
 				const verify = checkState(headers?.authorization, user?.id)
@@ -496,7 +507,7 @@ const route = new Elysia({ prefix: '/blog' })
 			try {
 				const user = await db.findUnique({
 					table: 'users',
-					where: { id: checkState(headers?.authorization)?.id || '' },
+					where: { id: checkState(headers?.authorization || '')?.id || '' },
 					select: ['id', 'roles']
 				})
 				const verify = checkState(headers?.authorization, user?.id)
