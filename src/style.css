@@ -77,9 +77,9 @@ h5 {
 small {
 	font-size: 0.9rem;
 }
-p,
-pre {
+p {
 	font-size: 1.3rem;
+	line-height: 2.2rem;
 }
 ul,
 ol,
