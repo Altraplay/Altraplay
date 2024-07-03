@@ -1,28 +1,5 @@
 import db from './orm'
 
-const comments = {
-	type: [
-		{
-			id: 'text',
-			comment: 'text',
-			author: 'text',
-			likes: 'bigint',
-			dislikes: 'bigint',
-			time: 'timestamp',
-			replies: [
-				{
-					id: 'text',
-					reply: 'text',
-					author: 'text',
-					likes: 'bigint',
-					dislikes: 'bigint',
-					time: 'timestamp'
-				}
-			]
-		}
-	]
-}
-
 async function push() {
 	db.schema({
 		users: {
@@ -49,47 +26,9 @@ async function push() {
 				team: { type: [{ user_id: 'text', role: 'text' }] },
 				is_email_verified: { type: 'boolean', index: true },
 				otp: 'text',
-				notifications: {
-					type: [
-						{
-							id: 'text',
-							title: 'text',
-							link: 'text',
-							type: 'text',
-							seen: 'boolean',
-							date: 'timestamp'
-						}
-					]
-				},
 				collect_history: 'boolean',
-				liked: {
-					type: {
-						blogs: 'list<text>',
-						posts: 'list<text>',
-						comments: 'list<text>',
-						videos: 'list<text>'
-					},
-					frozen: true
-				},
-				disliked: {
-					type: {
-						blogs: 'list<text>',
-						posts: 'list<text>',
-						comments: 'list<text>',
-						videos: 'list<text>'
-					},
-					frozen: true
-				},
 				blocked: 'list<text>',
 				visibility: 'list<text>',
-				logged_in_devices: {
-					type: [
-						{
-							name: 'text',
-							ip: 'text'
-						}
-					]
-				},
 				earning: 'bigint',
 				achievements: 'list<text>',
 				joined_at: { type: 'timestamp', index: true }
@@ -104,7 +43,6 @@ async function push() {
 				cover: 'text',
 				likes: 'bigint',
 				dislikes: 'bigint',
-				comments,
 				visibility: 'list<text>',
 				slashtags: 'list<text>',
 				views: 'bigint',
@@ -119,7 +57,6 @@ async function push() {
 				posted_by: { type: 'text', index: true },
 				likes: 'bigint',
 				dislikes: 'bigint',
-				comments,
 				visibility: 'list<text>',
 				slashtags: 'list<text>',
 				views: 'bigint',
@@ -134,18 +71,9 @@ async function push() {
 				url: { type: 'text', index: true },
 				cover: 'text',
 				creator: { type: 'text', index: true },
-				credits: {
-					type: [
-						{
-							user: 'text',
-							role: 'text'
-						}
-					]
-				},
 				duration: 'duration',
 				likes: 'bigint',
 				dislikes: 'bigint',
-				comments,
 				visibility: 'list<text>',
 				slashtags: 'list<text>',
 				views: 'bigint',
@@ -198,18 +126,85 @@ async function push() {
 				title: 'text',
 				description: 'text',
 				price: 'text',
-				reviews: {
-					type: [
-						{
-							reviewer: 'text',
-							review: 'text',
-							rating: 'decimal',
-							time: 'timestamp'
-						}
-					]
-				},
 				created_at: { type: 'timestamp', index: true },
 				slashtags: 'list<text>'
+			}
+		},
+		liked_by_user: {
+			columns: {
+				user_id: { type: 'text', isPrimaryKey: true },
+				blogs: 'list<text>',
+				posts: 'list<text>',
+				comments: 'list<text>',
+				videos: 'list<text>'
+			},
+		},
+		disliked_by_user: {
+			columns: {
+				user_id: { type: 'text', isPrimaryKey: true },
+				blogs: 'list<text>',
+				posts: 'list<text>',
+				comments: 'list<text>',
+				videos: 'list<text>'
+			},
+		},
+		comments: {
+			columns: {
+				id: { type: 'text', isPrimaryKey: true },
+				comment: 'text',
+				author: 'text',
+				likes: 'bigint',
+				dislikes: 'bigint',
+				comment_on: 'text',
+				time: 'timestamp'
+			}
+		},
+		replies: {
+			columns: {
+				id: { type: 'text', isPrimaryKey: true },
+				comment_id: { type: 'text', index: true },
+				reply: 'text',
+				author: 'text',
+				likes: 'bigint',
+				dislikes: 'bigint',
+				time: 'timestamp'
+			}
+		},
+		notifications: {
+			columns: {
+				id: { type: 'text', isPrimaryKey: true },
+				user_id: { type: 'text', index: true },
+				title: 'text',
+				link: 'text',
+				type: 'text',
+				seen: 'boolean',
+				date: 'timestamp'
+			}
+		},
+		logged_in_devices: {
+			columns: {
+				id: { type: 'text', isPrimaryKey: true },
+				user_id: { type: 'text', index: true },
+				name: 'text',
+				ip: 'text'
+			}
+		},
+		credits: {
+			columns: {
+				id: { type: 'text', isPrimaryKey: true },
+				video_id: { type: 'text', index: true },
+				user: 'text',
+				role: 'text'
+			}
+		},
+		reviews: {
+			columns: {
+				id: { type: 'text', isPrimaryKey: true },
+				service_id: { type: 'text', index: true },
+				reviewer: 'text',
+				review: 'text',
+				rating: 'decimal',
+				time: 'timestamp'
 			}
 		}
 	})
