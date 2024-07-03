@@ -206,8 +206,8 @@ export interface Tables {
 	posts: Post
 	videos: Video
 	messages: Message
-	histories: History
-	search_histories: SearchHistory
+	history: History
+	search_history: SearchHistory
 	collections: Collection
 	services: Service
 }
