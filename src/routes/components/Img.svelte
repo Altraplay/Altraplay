@@ -1,7 +1,7 @@
 <script lang="ts">
 	export let src: string
-	export let width: string
-	export let height: string
+	export let width = 'auto'
+	export let height = 'auto'
 	export let alt: string
 	export let glowEffect = true
 	export let className = ''
