@@ -121,7 +121,6 @@ input::placeholder,
 textarea::placeholder {
 	color: #fff;
 }
-
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus,
@@ -129,7 +128,7 @@ input:-webkit-autofill:active {
 	transition: all 5000000s ease-in-out 0s;
 }
 .wrapper {
-	@apply flex min-h-[93vh] flex-col flex-wrap items-center justify-center;
+	@apply flex min-h-[93.7vh] w-full flex-col flex-wrap items-center justify-center;
 }
 [data-tooltip] {
 	position: relative;
