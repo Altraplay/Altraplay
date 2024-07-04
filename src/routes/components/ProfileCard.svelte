@@ -3,6 +3,7 @@
 	import { abbreviateNumber, formatTime } from '$lib/utils'
 	import Button from '@Components/Button.svelte'
 	import VerifiedIcon from '@Components/icons/Verified.svelte'
+	import Img from './Img.svelte'
 
 	function calculateLevel(level: number) {
 		if (level >= 100) {
@@ -25,10 +26,7 @@
 
 <section
 	class="flex max-w-[280px] flex-col items-center justify-center gap-[15px] rounded-lg bg-highlight-1 p-4 {className}">
-	<!-- svelte-ignore a11y-img-redundant-alt -->
-	<div class="-mt-[65px] w-[235px]">
-		<img src={data.profile_picture} alt="Background" class="absolute w-[245px] blur-lg" />
-		<img src={data.profile_picture} alt="Profile Picture" class="relative z-50" /></div>
+	<Img src={data.profile_picture} alt="Profile Picture" width="235px" className="-mt-[65px]" />
 	<div class="flex items-center justify-center gap-[3px]">
 		<h3>{data.name}</h3>
 		{#if data.verified}

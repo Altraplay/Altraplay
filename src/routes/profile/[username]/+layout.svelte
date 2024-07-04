@@ -2,6 +2,7 @@
 	import type { PageData } from './$types'
 	import { page } from '$app/stores'
 	import Profile from '@Components/ProfileCard.svelte'
+	import Img from '@Components/Img.svelte'
 
 	export let data: PageData
 	let activeTab = $page.url.pathname
@@ -11,11 +12,8 @@
 	<title>{data.name} - Tech Gunner</title>
 	<meta name="description" content={data.bio} />
 </svelte:head>
-<main class="flex flex-col gap-5">
-	<div class="absolute m-5 h-[28vh] w-[95vw] self-center"
-		><img src={data.banner} alt="banner" class="h-full w-full object-cover blur-xl" /></div>
-	<div class="z-30 m-5 h-[28vh] w-[95vw] self-center"
-		><img src={data.banner} alt="banner" class="h-full w-full object-cover" /></div>
+<main class="flex w-full flex-col gap-5">
+	<Img src={data.banner} alt="banner" width="93vw" height="27vh" className="self-center" />
 	<section class="flex translate-x-[340px] flex-col">
 		<div class="p-3 *:px-5">
 			<a

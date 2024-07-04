@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Verified from './icons/Verified.svelte'
 	import { formatTime, abbreviateNumber } from '$lib/utils'
+	import Img from './Img.svelte'
 
 	export let data: {
 		id: string
@@ -23,12 +24,7 @@
 	href="/{href}/{data.id}"
 	class="h-fit max-w-[311px] overflow-hidden {className}"
 	data-sveltekit-preload-data>
-	<div class="flex h-[180px] w-[310px] items-center justify-center">
-		<!-- svelte-ignore a11y-img-redundant-alt -->
-		<img src={data.cover} alt="Cover Image" class="absolute h-[180px] w-[310px] blur-lg" />
-		<!-- svelte-ignore a11y-img-redundant-alt -->
-		<img src={data.cover} alt="Cover Image" class="relative h-full w-full object-cover" />
-	</div>
+	<Img src={data.cover} alt="Cover Image" width="310px" height="180px" />
 	<a href="/profile/{data.user.username}" class="mt-4 w-fit" data-sveltekit-preload-data>
 		<!-- svelte-ignore a11y-img-redundant-alt -->
 		<div class="size-10">
