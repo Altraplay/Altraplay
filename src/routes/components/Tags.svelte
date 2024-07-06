@@ -41,7 +41,7 @@
 		const trimmedTag = tag.trim()
 		if (trimmedTag !== '' && tags.length < maxTags && !tags.some(t => t.value === trimmedTag)) {
 			tagsStore.update(value => {
-				const newValue = [...value, { value: trimmedTag, editable: false }]
+				const newValue = [...value, { value: trimmedTag.split(' ')[0], editable: false }]
 				undoStack.push([...value])
 				redoStack = []
 				return newValue
@@ -71,7 +71,7 @@
 
 	function handleTagEditKeyDown(e: KeyboardEvent, index: number) {
 		if (readOnly) return
-		if (e.key === 'Enter' || e.key === ' ' || e.key === ',') {
+		if (e.key === 'Enter' || e.key === ' ' || e.key === ',' || e.key === '/') {
 			tagsStore.update(value => {
 				value[index].editable = false
 				return value
@@ -87,7 +87,7 @@
 
 	function shortcuts(e: KeyboardEvent) {
 		if (readOnly) return
-		if (e.key === 'Enter' || e.key === ' ' || e.key === ',') {
+		if (e.key === 'Enter' || e.key === ' ' || e.key === ',' || e.key === '/') {
 			e.preventDefault()
 			addTag(inputValue)
 		}
@@ -182,6 +182,7 @@
 						type="text"
 						bind:value={tag.value}
 						on:keydown={e => handleTagEditKeyDown(e, index)}
+						on:paste={handlePaste}
 						class="-ml-[2px] h-full w-full rounded-r-[.3rem] bg-secondary pl-2"
 						autofocus
 						on:focusout={() => {
