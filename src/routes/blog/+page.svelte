@@ -10,14 +10,14 @@
 </svelte:head>
 
 {#if blogs.length === 0}
-	<div class="wrapper">
+	<main class="wrapper">
 		<p>
 			No blog has been published yet. <br />
 			Be the first one to <a href="/blog/compose" class="text-primary"><b>publish</b></a> a blog !!!
 		</p>
-	</div>
+	</main>
 {:else}
-	<div class="flex flex-wrap gap-[25px] p-3">
+	<main class="gap-[25px] p-3 w-full cards">
 		{#each blogs as blog}
 			<Card
 				data={{
@@ -31,5 +31,19 @@
 				}}
 				href="blog" />
 		{/each}
-	</div>
+	</main>
 {/if}
+
+<style>
+	.cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+		grid-template-rows: repeat(auto-fill, minmax(280px, .48fr));
+    }
+
+    @media (max-width: 600px) {
+        .cards {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
