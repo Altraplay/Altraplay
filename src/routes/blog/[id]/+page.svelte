@@ -35,7 +35,7 @@
 			<small class="absolute ml-[48px] mt-5 text-slate-400">{data.author.username}</small>
 		</a>
 		<small class="-mt-3 self-start text-slate-400"
-			>views: {abbreviateNumber(data.views)} • {new Date(data.created).toLocaleDateString(
+			>views: {abbreviateNumber(data.views)} • {new Date(data.created_at).toLocaleDateString(
 				undefined,
 				{
 					dateStyle: 'long'
