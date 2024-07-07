@@ -98,11 +98,6 @@ ol ol {
 }
 img {
 	border-radius: 12px;
-	transition: all 0.3s ease-in-out;
-}
-img:hover {
-	scale: 1.03;
-	border-radius: 5px;
 }
 form,
 input,

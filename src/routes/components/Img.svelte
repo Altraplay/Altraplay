@@ -12,22 +12,25 @@
 </script>
 
 <div
-	style="{height ? `height: ${height};` : ''} {width ? `width: ${width};` : ''} {maxWidth
-		? `max-width: ${maxWidth}`
-		: ''}; {minWidth ? `min-width: ${minWidth};` : ''} {maxHeight
-		? `max-hight: ${maxHeight};`
-		: ''} {minHeight ? `min-hight: ${minHeight};` : ''}"
-	class="flex items-center justify-center {className}">
+	class="relative flex items-center justify-center *:transition-all *:duration-700 *:rounded-xl [&>*:hover]:rounded-md [&>*:hover]:scale-[1.02] {className}"
+	style="
+	  {height ? `height: ${height};` : ''} 
+	  {width ? `width: ${width};` : ''} 
+	  {maxWidth ? `max-width: ${maxWidth};` : ''} 
+	  {minWidth ? `min-width: ${minWidth};` : ''} 
+	  {maxHeight ? `max-height: ${maxHeight};` : ''} 
+	  {minHeight ? `min-height: ${minHeight};` : ''}
+	">
 	{#if glowEffect}
-		<img
-			{src}
-			{alt}
-			style="{height ? `height: ${height};` : ''} {width ? `width: ${width};` : ''} {maxWidth
-				? `max-width: ${maxWidth};`
-				: ''} {minWidth ? `min-width: ${minWidth};` : ''} {maxHeight
-				? `max-hight: ${maxHeight};`
-				: ''} {minHeight ? `min-hight: ${minHeight};` : ''}"
-			class="absolute blur-lg" />
+		<div
+			class="absolute inset-0 bg-cover bg-center blur-lg"
+			style="background-image: url('{src}');"></div>
 	{/if}
 	<img {src} {alt} class="relative h-full w-full object-cover" />
 </div>
+
+<style>
+	div:hover .absolute {
+		filter: blur(30px);
+	}
+</style>
