@@ -4,7 +4,7 @@ const users = [
 	{
 		id: 'batman',
 		username: '@batman',
-		name: 'The Dark Knight',
+		name: 'Bruce Wayne',
 		password: 'password123',
 		email: 'batman@justiceleague.com',
 		bio: 'I am Vengeance, I am the Night, I am Batman',
@@ -18,28 +18,22 @@ const users = [
 		needs_for_next_level: 12000,
 		roles: ['Super Admin', 'Moderator'],
 		skills: [
-			{ name: 'Martial Arts', level: 10 },
-			{ name: 'Investigation', level: 10 }
+			{ name: 'Martial Arts', level: 100 },
+			{ name: 'Investigation', level: 100 }
 		],
-		languages: [{ name: 'English', level: 10 }],
+		languages: [{ name: 'English', level: 100 }],
 		verified: true,
-		team: [
-			{ user_id: 'alfred', role: 'butler' },
-			{ user_id: 'lucius', role: 'tech support' }
-		],
 		is_email_verified: true,
 		otp: '123456',
 		collect_history: true,
-		blocked: ['joer'],
 		visibility: ['public'],
 		earning: 1000000,
-		achievements: ['saved Gotham', 'defeated Joker'],
-		joined_at: new Date('2024-06-21T10:00:00Z')
+		joined_at: new Date(Date.now())
 	},
 	{
 		id: 'goku',
 		username: '@goku',
-		name: 'Goku',
+		name: 'Son Goku',
 		password: 'password123',
 		email: 'goku@dragonball.com',
 		bio: 'Saiyan Warrior',
@@ -54,23 +48,17 @@ const users = [
 		needs_for_next_level: 3000,
 		roles: ['User', 'Premium User'],
 		skills: [
-			{ name: 'Martial Arts', level: 10 },
-			{ name: 'Super Saiyan', level: 10 }
+			{ name: 'Martial Arts', level: 100 },
+			{ name: 'Super Saiyan', level: 100 }
 		],
-		languages: [{ name: 'Japanese', level: 10 }],
+		languages: [{ name: 'Japanese', level: 100 }],
 		verified: true,
-		team: [
-			{ user_id: 'whis', role: 'mentor' },
-			{ user_id: 'beerus', role: 'god of destruction' }
-		],
 		is_email_verified: true,
 		otp: '654321',
 		collect_history: true,
-		blocked: ['frieza'],
 		visibility: ['public'],
 		earning: 2000000,
-		achievements: ['won Tournament of Power', 'defeated Frieza'],
-		joined_at: new Date('2024-06-21T10:00:00Z')
+		joined_at: new Date(Date.now())
 	},
 	{
 		id: 'kakashi',
@@ -80,7 +68,8 @@ const users = [
 		email: 'kakashi@naruto.com',
 		bio: 'Copy Ninja',
 		profile_picture: 'https://i.pinimg.com/736x/65/0e/83/650e83b9b6c8eba71f416ee362fb1689.jpg',
-		banner: 'https://example.com/kakashi_banner.jpg',
+		banner:
+			'https://fiverr-res.cloudinary.com/t_main1,q_auto,f_auto/gigs2/231221690/original/fb7ac9454943962800e14cf39daa384f86839352.png',
 		followers: ['naruto', 'sasuke'],
 		following: ['sakura', 'jiraiya'],
 		interests: ['ninjutsu', 'teaching'],
@@ -92,20 +81,14 @@ const users = [
 			{ name: 'Ninjutsu', level: 9 },
 			{ name: 'Genjutsu', level: 8 }
 		],
-		languages: [{ name: 'Japanese', level: 10 }],
+		languages: [{ name: 'Japanese', level: 100 }],
 		verified: true,
-		team: [
-			{ user_id: 'guy', role: 'rival' },
-			{ user_id: 'yamato', role: 'subordinate' }
-		],
 		is_email_verified: true,
 		otp: '789123',
 		collect_history: true,
-		blocked: ['zabuza'],
 		visibility: ['public'],
 		earning: 750000,
-		achievements: ['trained Team 7', 'defeated Zabuza'],
-		joined_at: new Date('2024-06-21T10:00:00Z')
+		joined_at: new Date(Date.now())
 	},
 	{
 		id: 'ash',
@@ -128,20 +111,14 @@ const users = [
 			{ name: 'Pokemon Training', level: 85 },
 			{ name: 'Battling', level: 90 }
 		],
-		languages: [{ name: 'English', level: 10 }],
+		languages: [{ name: 'English', level: 100 }],
 		verified: true,
-		team: [
-			{ user_id: 'professor_oak', role: 'mentor' },
-			{ user_id: 'may', role: 'companion' }
-		],
 		is_email_verified: true,
 		otp: '456789',
 		collect_history: true,
-		blocked: ['team_rocket'],
 		visibility: ['public'],
 		earning: 600000,
-		achievements: ['won Indigo League', 'caught Pikachu'],
-		joined_at: new Date('2024-06-21T10:00:00Z')
+		joined_at: new Date(Date.now())
 	},
 	{
 		id: 'optimus_prime',
@@ -150,8 +127,10 @@ const users = [
 		password: 'password123',
 		email: 'optimus@autobots.com',
 		bio: 'Autobot Leader',
-		profile_picture: 'https://example.com/optimus_profile.jpg',
-		banner: 'https://example.com/optimus_banner.jpg',
+		profile_picture:
+			'https://w0.peakpx.com/wallpaper/144/309/HD-wallpaper-autobot-logo-g1-transformers.jpg',
+		banner:
+			'https://news.tfw2005.com/wp-content/uploads/sites/10/2022/02/Transformers-Paramount-1278x250.jpeg',
 		followers: ['bumblebee', 'ratchet'],
 		following: ['megatron', 'starscream'],
 		interests: ['leadership', 'strategy'],
@@ -160,23 +139,187 @@ const users = [
 		needs_for_next_level: 4000,
 		roles: ['User', 'Admin'],
 		skills: [
-			{ name: 'Leadership', level: 10 },
-			{ name: 'Combat', level: 10 }
+			{ name: 'Leadership', level: 100 },
+			{ name: 'Combat', level: 100 }
 		],
-		languages: [{ name: 'Cybertronian', level: 10 }],
+		languages: [{ name: 'Cybertronian', level: 100 }],
 		verified: true,
-		team: [
-			{ user_id: 'ironhide', role: 'security' },
-			{ user_id: 'jazz', role: 'special ops' }
-		],
 		is_email_verified: true,
 		otp: '987654',
 		collect_history: true,
-		blocked: ['megatron'],
 		visibility: ['public'],
 		earning: 3000000,
-		achievements: ['saved Earth', 'defeated Megatron'],
-		joined_at: new Date('2024-06-21T10:00:00Z')
+		joined_at: new Date(Date.now())
+	},
+	{
+		id: 'nightwing',
+		username: '@nightwing',
+		name: 'Grayson',
+		password: 'password123',
+		email: 'nightwing@justiceleague.com',
+		bio: 'The original Robin, now a hero in his own right.',
+		profile_picture: 'https://cdn.dribbble.com/users/20878/screenshots/1658780/nightwing-dribbble_1x.png',
+		banner: 'https://wallpapers.com/images/hd/faceless-nightwing-in-violet-backdrop-sewzi37ar2kagb2x.jpg',
+		followers: ['batman', 'robin'],
+		following: ['batman', 'superman'],
+		interests: ['acrobatics', 'martial arts'],
+		points: 8000,
+		level: 'Neon Ninja',
+		needs_for_next_level: 10000,
+		roles: ['User', 'Admin'],
+		skills: [
+			{ name: 'Acrobatics', level: 100 },
+			{ name: 'Martial Arts', level: 9 }
+		],
+		languages: [{ name: 'English', level: 100 }],
+		verified: true,
+		is_email_verified: true,
+		otp: '321654',
+		collect_history: true,
+		visibility: ['public'],
+		earning: 800000,
+		joined_at: new Date(Date.now())
+	},
+	{
+		id: 'joker',
+		username: '@joker',
+		name: 'Joker',
+		password: 'password123',
+		email: 'joker@gotham.com',
+		bio: 'Why so serious? 😈',
+		profile_picture: 'https://c.wallhere.com/photos/c7/6b/Joker_Batman_Heath_Ledger-84483.jpg!d',
+		banner: 'https://example.com/joker_banner.jpg',
+		followers: ['harleyquinn', 'penguin'],
+		following: ['harleyquinn', 'riddler'],
+		interests: ['chaos', 'anarchy'],
+		points: 5000,
+		level: 'Silent Soul',
+		needs_for_next_level: 8000,
+		roles: ['User'],
+		languages: [{ name: 'English', level: 100 }],
+		verified: false,
+		is_email_verified: true,
+		otp: '456123',
+		collect_history: true,
+		visibility: ['public'],
+		earning: 600000,
+		joined_at: new Date(Date.now())
+	},
+	{
+		id: 'jason',
+		username: '@jason',
+		name: 'Jason',
+		password: 'password123',
+		email: 'jason@turningmecard.com',
+		bio: 'Hero from the world of Turning Mecard',
+		profile_picture: 'https://example.com/jason_profile.jpg',
+		banner: 'https://example.com/jason_banner.jpg',
+		followers: ['ally', 'evan'],
+		following: ['ally', 'ryan'],
+		interests: ['mech battles', 'adventure'],
+		points: 7000,
+		level: 'Electric Knight',
+		needs_for_next_level: 9000,
+		roles: ['User', 'Premium User'],
+		skills: [
+			{ name: 'Mech Control', level: 9 },
+			{ name: 'Strategy', level: 8 }
+		],
+		languages: [{ name: 'English', level: 100 }],
+		verified: true,
+		is_email_verified: true,
+		otp: '654789',
+		collect_history: true,
+		visibility: ['public'],
+		earning: 500000,
+		joined_at: new Date(Date.now())
+	},
+	{
+		id: 'green_lantern',
+		username: '@greenlantern',
+		name: 'Hal Jordan',
+		password: 'password123',
+		email: 'hal@justiceleague.com',
+		bio: "In brightest day, in blackest night, no evil shall escape my sight. Let those who worship evil's might beware my power Green Lantern's light!",
+		profile_picture: 'https://example.com/greenlantern_profile.jpg',
+		banner: 'https://example.com/greenlantern_banner.jpg',
+		followers: ['batman', 'superman'],
+		following: ['wonderwoman', 'flash'],
+		interests: ['space patrol', 'justice'],
+		points: 10000,
+		level: 'The Blazing Beacon',
+		needs_for_next_level: 13000,
+		roles: ['User', 'Admin'],
+		skills: [
+			{ name: 'Ring Mastery', level: 100 },
+			{ name: 'Aviation', level: 9 }
+		],
+		languages: [{ name: 'English', level: 100 }],
+		verified: true,
+		is_email_verified: true,
+		otp: '987321',
+		collect_history: true,
+		visibility: ['public'],
+		earning: 1000000,
+		joined_at: new Date(Date.now())
+	},
+	{
+		id: 'ironman',
+		username: '@ironman',
+		name: 'Tony Stark',
+		password: 'password123',
+		email: 'ironman@avengers.com',
+		bio: 'Genius, Billionaire, Playboy, Philanthropist',
+		profile_picture: 'https://example.com/ironman_profile.jpg',
+		banner: 'https://example.com/ironman_banner.jpg',
+		followers: ['captainamerica', 'thor'],
+		following: ['hulk', 'blackwidow'],
+		interests: ['technology', 'innovation'],
+		points: 12000,
+		level: 'Technology Demon',
+		needs_for_next_level: 15000,
+		roles: ['User', 'Admin'],
+		skills: [
+			{ name: 'Engineering', level: 100 },
+			{ name: 'Combat', level: 9 }
+		],
+		languages: [{ name: 'English', level: 100 }],
+		verified: true,
+		is_email_verified: true,
+		otp: '159357',
+		collect_history: true,
+		visibility: ['public'],
+		earning: 2000000,
+		joined_at: new Date(Date.now())
+	},
+	{
+		id: 'saitama',
+		username: '@saitama',
+		name: 'Saitama',
+		password: 'password123',
+		email: 'saitama@onepunchman.com',
+		bio: 'The hero for fun',
+		profile_picture: 'https://example.com/saitama_profile.jpg',
+		banner: 'https://example.com/saitama_banner.jpg',
+		followers: ['genos', 'king'],
+		following: ['genos', 'blizzard'],
+		interests: ['heroism', 'training'],
+		points: 15000,
+		level: 'The Blazing Souls of Creators',
+		needs_for_next_level: 17000,
+		roles: ['User', 'Premium User'],
+		skills: [
+			{ name: 'Super Strength', level: 100 },
+			{ name: 'Speed', level: 9 }
+		],
+		languages: [{ name: 'Japanese', level: 100 }],
+		verified: true,
+		is_email_verified: true,
+		otp: '753951',
+		collect_history: true,
+		visibility: ['public'],
+		earning: 800000,
+		joined_at: new Date(Date.now())
 	}
 ]
 
@@ -242,7 +385,7 @@ const blogs = [
 			'hero'
 		],
 		views: 1258000,
-		created_at: new Date('2024-06-21T10:00:00Z')
+		created_at: new Date(Date.now())
 	},
 	{
 		id: 'blog2',
@@ -310,7 +453,7 @@ const blogs = [
 			'adventure'
 		],
 		views: 1624930,
-		created_at: new Date('2024-06-21T10:00:00Z')
+		created_at: new Date(Date.now())
 	},
 	{
 		id: 'blog3',
@@ -375,7 +518,7 @@ const blogs = [
 			'hero'
 		],
 		views: 11000,
-		created_at: new Date('2024-06-21T10:00:00Z')
+		created_at: new Date(Date.now())
 	},
 	{
 		id: 'blog4',
@@ -442,7 +585,7 @@ const blogs = [
 			'nintendo'
 		],
 		views: 85128633746,
-		created_at: new Date('2024-06-21T10:00:00Z')
+		created_at: new Date(Date.now())
 	},
 	{
 		id: 'blog5',
@@ -508,7 +651,245 @@ const blogs = [
 			'hope'
 		],
 		views: 13000,
-		created_at: new Date('2024-06-21T10:00:00Z')
+		created_at: new Date(Date.now())
+	},
+	{
+		id: 'blog6',
+		title: "Nightwing's Evolution: From Robin to Hero",
+		content: `
+		<section>
+		  <p>Nightwing, formerly known as the original Robin, has evolved into a hero in his own right. After parting ways with Batman, Dick Grayson adopted the Nightwing persona and moved to Blüdhaven. His journey from sidekick to independent hero is marked by personal growth, intense training, and a commitment to justice. Nightwing's acrobatic skills and tactical prowess make him a formidable defender of Blüdhaven.</p>
+		</section>
+		<section>
+		  <p>Nightwing's time as Robin was a period of learning and development under Batman's mentorship. The transition to Nightwing represented his desire to forge his own path and step out of Batman's shadow. Establishing himself in Blüdhaven, Nightwing faced new challenges and villains, proving his capability as a solo hero.</p>
+		  <p>His combat style is a blend of acrobatics and martial arts, honed to perfection through years of rigorous training. Nightwing's ability to think on his feet and adapt to different situations makes him a versatile and unpredictable opponent. His partnership with Oracle, providing him with critical intelligence and tech support, further enhances his effectiveness as a hero.</p>
+		</section>
+		<section>
+		  <p>Nightwing's evolution is also characterized by his strong sense of justice and dedication to protecting the innocent. He is driven by the desire to make a difference, not just in Blüdhaven but also in the wider world. His leadership skills have come to the fore in various team-ups with other heroes, showcasing his ability to inspire and lead.</p>
+		  <p>In conclusion, Nightwing's journey from Robin to a hero in his own right is a testament to his resilience, determination, and unwavering commitment to justice. His legacy as a defender of Blüdhaven and a key member of the superhero community continues to inspire and motivate others.</p>
+		</section>`,
+		author: 'nightwing',
+		cover: 'https://example.com/blog6_cover.jpg',
+		likes: 15000,
+		dislikes: 5,
+		visibility: ['public'],
+		slashtags: [
+			'nightwing',
+			'robin',
+			'bludhaven',
+			'hero',
+			'batman',
+			'justice',
+			'acrobatics',
+			'martialarts',
+			'tactics',
+			'oracle',
+			'evolution',
+			'independent',
+			'legacy',
+			'protector',
+			'crimefighter'
+		],
+		views: 20000,
+		created_at: new Date('2024-07-01T10:00:00Z')
+	},
+	{
+		id: 'blog7',
+		title: 'Joker: The Clown Prince of Crime',
+		content: `
+		<section>
+		  <p>The Joker, Gotham's most notorious villain, is known for his chaotic and unpredictable nature. His crimes are marked by a blend of dark humor and extreme violence, making him one of Batman's most challenging adversaries. The Joker's origins are shrouded in mystery, adding to his enigmatic and terrifying persona.</p>
+		</section>
+		<section>
+		  <p>The Joker's relationship with Batman is a complex interplay of obsession and enmity. He views Batman not just as an enemy but as a counterpart, someone who brings meaning to his existence. Their confrontations are as much psychological battles as they are physical, with the Joker constantly testing Batman's limits and morals.</p>
+		  <p>Despite his madness, the Joker is a criminal mastermind with a sharp intellect and an uncanny ability to manipulate those around him. His plans are often elaborate and meticulously executed, showcasing his strategic mind and deep understanding of human nature. The Joker's unpredictability makes him a constant threat to Gotham and its inhabitants.</p>
+		</section>
+		<section>
+		  <p>The Joker's influence extends beyond Gotham, inspiring other villains and striking fear into the hearts of even the bravest heroes. His legacy is one of chaos and destruction, but also of a twisted brilliance that challenges conventional notions of villainy. The Joker's story is a dark mirror to Batman's, reflecting the thin line between order and chaos, sanity and madness.</p>
+		  <p>In conclusion, the Joker remains one of the most iconic and enduring villains in comic book history. His chaotic nature, complex relationship with Batman, and twisted brilliance make him a formidable and fascinating adversary. The Joker's legacy as the Clown Prince of Crime continues to captivate and horrify, a testament to the enduring power of his character.</p>
+		</section>`,
+		author: 'joker',
+		cover: 'https://example.com/blog7_cover.jpg',
+		likes: 18000,
+		dislikes: 20,
+		visibility: ['public'],
+		slashtags: [
+			'joker',
+			'batman',
+			'villain',
+			'gotham',
+			'chaos',
+			'crime',
+			'darkhumor',
+			'strategy',
+			'intellect',
+			'manipulation',
+			'adversary',
+			'obsession',
+			'madness',
+			'legacy',
+			'clownprince'
+		],
+		views: 25000,
+		created_at: new Date('2024-07-01T10:00:00Z')
+	},
+	{
+		id: 'blog8',
+		title: "Green Lantern's Light: The Heroic Journey of Hal Jordan",
+		content: `
+		<section>
+		  <p>Hal Jordan, the Green Lantern of Sector 2814, is a beacon of hope and courage. Chosen for his ability to overcome great fear, Hal wields the power ring to protect the universe from threats both terrestrial and cosmic. His journey as a Green Lantern is marked by heroism, sacrifice, and unwavering commitment to justice.</p>
+		</section>
+		<section>
+		  <p>Hal's transformation into the Green Lantern began when he was chosen by the dying Abin Sur to inherit the power ring. This event set him on a path of interstellar adventure and conflict, as he joined the Green Lantern Corps and learned to harness the ring's power. Hal's fearlessness and determination quickly made him one of the Corps' most respected members.</p>
+		  <p>Throughout his career, Hal has faced numerous challenges, from intergalactic tyrants to cosmic entities. His battles against foes like Sinestro, his former mentor turned arch-nemesis, have tested his resolve and pushed his powers to their limits. Hal's ability to inspire and lead has been instrumental in many of the Corps' victories.</p>
+		</section>
+		<section>
+		  <p>One of Hal's defining traits is his unyielding willpower, the source of his strength as a Green Lantern. His ability to create constructs limited only by his imagination makes him a versatile and formidable hero. Hal's leadership during crises, such as the War of Light and the Blackest Night, has been crucial in uniting the various Lantern Corps against common threats.</p>
+		  <p>In addition to his interstellar duties, Hal has maintained strong ties to Earth, often balancing his responsibilities as a Green Lantern with his personal life. His relationships with fellow heroes, such as the Justice League, have further solidified his status as a key defender of Earth.</p>
+		</section>
+		<section>
+		  <p>Hal Jordan's journey as the Green Lantern is a testament to the power of courage and willpower. His legacy as one of the greatest Green Lanterns in history is defined by his heroic deeds, his leadership, and his unwavering commitment to justice. Hal's story continues to inspire and illuminate the path for new generations of heroes.</p>
+		</section>`,
+		author: 'green_lantern',
+		cover: 'https://example.com/blog8_cover.jpg',
+		likes: 12000,
+		dislikes: 8,
+		visibility: ['public'],
+		slashtags: [
+			'greenlantern',
+			'haljordan',
+			'justiceleague',
+			'hero',
+			'willpower',
+			'courage',
+			'power ring',
+			'lanterncorps',
+			'sinestro',
+			'leadership',
+			'sacrifice',
+			'interstellar',
+			'justice',
+			'legacy',
+			'inspiration'
+		],
+		views: 22000,
+		created_at: new Date('2024-07-01T10:00:00Z')
+	},
+	{
+		id: 'blog9',
+		title: 'Ironman: The Armored Avenger',
+		content: `
+		<section>
+		  <p>Ironman, also known as Tony Stark, is a genius billionaire who uses his intellect and resources to create advanced technology and armor suits. As a founding member of the Avengers, Ironman's journey is one of innovation, heroism, and personal growth. His legacy as the Armored Avenger is marked by his contributions to science and his relentless pursuit of justice.</p>
+		</section>
+		<section>
+		  <p>Tony Stark's transformation into Ironman began after he was captured by terrorists and forced to build a weapon. Instead, he created the first Ironman suit to escape captivity, marking the beginning of his career as a superhero. This experience profoundly changed Tony, inspiring him to use his inventions for the greater good.</p>
+		  <p>Ironman's journey is characterized by constant innovation and improvement of his suits. Each new iteration of the Ironman armor reflects Tony's growth as an inventor and a hero. His suits are equipped with advanced weaponry, defense systems, and artificial intelligence, making him a formidable force in battle.</p>
+		</section>
+		<section>
+		  <p>As a member of the Avengers, Ironman has played a crucial role in defending the Earth from various threats. His leadership and strategic mind have been instrumental in numerous victories. Tony's relationship with his fellow Avengers, particularly Captain America, has been a driving force in his development as a leader.</p>
+		  <p>Beyond his heroics, Tony Stark's journey is also one of personal growth and redemption. His struggle with his own demons, such as his battle with alcoholism, adds depth to his character. Tony's determination to overcome his flaws and become a better person is a key aspect of his story.</p>
+		</section>
+		<section>
+		  <p>Ironman's legacy is defined by his contributions to science and his impact on the superhero community. His innovations have paved the way for advancements in technology and have inspired other heroes to follow in his footsteps. Tony's story is a testament to the power of intellect and the importance of using one's abilities for the greater good.</p>
+		  <p>In conclusion, Ironman's journey as the Armored Avenger is a story of heroism, innovation, and personal growth. Tony Stark's legacy continues to inspire and motivate, proving that even the most flawed individuals can achieve greatness through determination and ingenuity.</p>
+		</section>`,
+		author: 'ironman',
+		cover: 'https://example.com/blog9_cover.jpg',
+		likes: 17000,
+		dislikes: 12,
+		visibility: ['public'],
+		slashtags: [
+			'ironman',
+			'tonystark',
+			'avengers',
+			'genius',
+			'billionaire',
+			'technology',
+			'innovation',
+			'armorsuit',
+			'hero',
+			'justice',
+			'redemption',
+			'leadership',
+			'science',
+			'invention',
+			'legacy'
+		],
+		views: 28000,
+		created_at: new Date('2024-07-01T10:00:00Z')
+	},
+	{
+		id: 'blog10',
+		title: 'Saitama: The Hero for Fun',
+		content: `
+		<section>
+		  <p>Saitama, also known as One Punch Man, is a hero who can defeat any opponent with a single punch. His journey is marked by his quest for a worthy opponent and the pursuit of heroism for fun. Despite his overwhelming power, Saitama remains humble and dedicated to protecting the innocent.</p>
+		</section>
+		<section>
+		  <p>Saitama's journey began as an ordinary man who decided to become a hero after a life-changing encounter with a villain. Through rigorous training, he gained unparalleled strength, but at the cost of losing his hair. His training regimen, which he claims to be simple, is the source of his incredible power.</p>
+		  <p>Despite his strength, Saitama struggles with the mundanity of being unbeatable. His search for a challenging opponent leads him to join the Hero Association, where he meets other heroes and takes on various missions. Saitama's interactions with his disciple, Genos, and other heroes highlight his unconventional approach to heroism.</p>
+		</section>
+		<section>
+		  <p>Saitama's battles are characterized by their brevity, as he defeats even the most formidable foes with ease. However, his journey is not just about fighting but also about finding meaning and satisfaction in his heroics. His humility and lack of recognition from the Hero Association add a layer of complexity to his character.</p>
+		  <p>One of Saitama's most significant battles is against Boros, an alien conqueror. The fight, although brief, showcases Saitama's full strength and his indifference to his own power. Saitama's victory over Boros reinforces his status as the strongest hero but also deepens his existential crisis.</p>
+		</section>
+		<section>
+		  <p>In conclusion, Saitama's journey as the Hero for Fun is a unique take on the superhero genre. His overwhelming power and humble demeanor make him an intriguing character. Saitama's story is a commentary on the nature of heroism and the search for purpose, proving that even the strongest heroes face their own challenges.</p>
+		</section>`,
+		author: 'saitama',
+		cover: 'https://example.com/blog10_cover.jpg',
+		likes: 14000,
+		dislikes: 7,
+		visibility: ['public'],
+		slashtags: [
+			'saitama',
+			'onepunchman',
+			'hero',
+			'fun',
+			'strength',
+			'heroassociation',
+			'genos',
+			'battles',
+			'humility',
+			'recognition',
+			'existential',
+			'purpose',
+			'power',
+			'journey',
+			'superhero'
+		],
+		views: 19000,
+		created_at: new Date('2024-07-01T10:00:00Z')
+	},
+	{
+	  id: 'blog11',
+	  title: "Jason's Adventures: Turning Mecard",
+	  content: `
+	  <section>
+		<p>Jason, the hero from the world of Turning Mecard, is known for his bravery and strategic mind. His journey is filled with thrilling mech battles and adventures as he strives to protect the Mecardimals and maintain peace. Jason's determination and leadership have made him a key figure in the Mecard world.</p>
+	  </section>
+	  <section>
+		<p>Jason's journey began when he discovered the existence of Mecardimals, mechanical creatures with extraordinary abilities. His bond with these creatures grew as he learned to control and battle with them. Jason's strategic thinking and quick decision-making were crucial in overcoming numerous challenges and adversaries.</p>
+		<p>Throughout his adventures, Jason faced various villains and threats to the Mecard world. His encounters with the villainous Black Mirror tested his skills and resolve. With the help of his friends and allies, Jason managed to thwart Black Mirror's plans and protect the Mecardimals from harm.</p>
+	  </section>
+	  <section>
+		<p>Jason's battles were not just physical confrontations but also tests of his leadership and teamwork. His ability to inspire and lead his friends into battle played a significant role in their victories. Jason's journey is a testament to the power of friendship and the importance of standing up for what is right.</p>
+		<p>In conclusion, Jason's adventures in the world of Turning Mecard are a thrilling saga of bravery, strategy, and friendship. His journey continues to inspire and captivate, proving that even in the face of great challenges, determination and teamwork can lead to victory.</p>
+	  </section>`,
+	  author: 'jason',
+	  cover: 'https://example.com/blog11_cover.jpg',
+	  likes: 13000,
+	  dislikes: 10,
+	  visibility: ['public'],
+	  slashtags: [
+		'jason', 'turningmecard', 'mecardimals', 'mechbattles', 'adventure',
+		'strategy', 'leadership', 'friendship', 'bravery', 'villains',
+		'blackmirror', 'heroes', 'determination', 'teamwork', 'inspiration'
+	  ],
+	  views: 21000,
+	  created_at: new Date('2024-07-01T10:00:00Z')
 	}
 ]
 async function push() {
