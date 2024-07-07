@@ -48,26 +48,6 @@ const route = new Elysia({ prefix: '/auth' })
 					return { err: 'Username or Email already exists' }
 				}
 
-				if (existingUsername?.users?.length > 1) {
-					for (const user of existingUsername?.users) {
-						await db.delete({
-							table: 'users',
-							where: { id: user.id, is_email_verified: false }
-						})
-					}
-				}
-
-				if (existingEmail?.users?.length > 1) {
-					for (const user of existingEmail?.users) {
-						await db.delete({
-							table: 'users',
-							where: {
-								id: user.id, is_email_verified: false
-							}
-						})
-					}
-				}
-
 				const hash = await Bun.password.hash(password, { algorithm: 'bcrypt', cost: 10 })
 
 				const id = randomString(randomInt(5, 85), true, true, true, true)

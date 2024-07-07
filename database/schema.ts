@@ -24,7 +24,7 @@ async function push() {
 				languages: { type: [{ name: 'text', level: 'int' }] },
 				verified: 'boolean',
 				team: { type: [{ user_id: 'text', role: 'text' }] },
-				is_email_verified: { type: 'boolean', isPrimaryKey: true },
+				is_email_verified: { type: 'boolean', index: true },
 				otp: 'text',
 				collect_history: 'boolean',
 				blocked: 'list<text>',
@@ -137,7 +137,7 @@ async function push() {
 				posts: 'list<text>',
 				comments: 'list<text>',
 				videos: 'list<text>'
-			}
+			},
 		},
 		disliked_by_user: {
 			columns: {
@@ -146,7 +146,7 @@ async function push() {
 				posts: 'list<text>',
 				comments: 'list<text>',
 				videos: 'list<text>'
-			}
+			},
 		},
 		comments: {
 			columns: {
