@@ -72,7 +72,6 @@ export const actions: Actions = {
 					err: e?.response?.data?.err || e?.response?.data
 				})
 			} else {
-				console.log('Error registering user from the client-side ', e)
 				error(e.response?.status, e.response?.data?.err || e?.response?.data)
 			}
 		}
