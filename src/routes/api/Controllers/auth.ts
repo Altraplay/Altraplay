@@ -72,7 +72,7 @@ const route = new Elysia({ prefix: '/auth' })
 
 				const id = randomString(randomInt(5, 85), true, true, true, true)
 
-				const token = GenToken({ id: newUsername, verified: false }, '1h')
+				const token = GenToken({ id, verified: false }, '1h')
 
 				await db.create({
 					table: 'users',
