@@ -9,7 +9,7 @@ import { serverErr } from '$lib/constant'
 const route = new Elysia({ prefix: '/auth' })
 	.post(
 		'/sign-up',
-		async ({ body, set, headers }) => {
+		async ({ body, set }) => {
 			try {
 				// eslint-disable-next-line prefer-const
 				let { username, email, password, name } = body
@@ -31,12 +31,12 @@ const route = new Elysia({ prefix: '/auth' })
 					db.findMany({
 						tables: ['users'],
 						where: { users: { username: newUsername } },
-						select: { users: ['is_email_verified'] }
+						select: { users: ['is_email_verified', 'id'] }
 					}),
 					db.findMany({
 						tables: ['users'],
 						where: { users: { email: email.toLowerCase().replaceAll(' ', '') } },
-						select: { users: ['is_email_verified'] }
+						select: { users: ['is_email_verified', 'id'] }
 					})
 				])
 
@@ -49,19 +49,23 @@ const route = new Elysia({ prefix: '/auth' })
 				}
 
 				if (existingUsername?.users?.length > 1) {
-					await db.deleteMany({
-						tables: ['users'],
-						where: { users: { username: newUsername, is_email_verified: false } }
-					})
+					for (const user of existingUsername?.users) {
+						await db.delete({
+							table: 'users',
+							where: { id: user.id, is_email_verified: false }
+						})
+					}
 				}
 
 				if (existingEmail?.users?.length > 1) {
-					await db.deleteMany({
-						tables: ['users'],
-						where: {
-							users: { email: email.toLowerCase().replaceAll(' ', ''), is_email_verified: false }
-						}
-					})
+					for (const user of existingEmail?.users) {
+						await db.delete({
+							table: 'users',
+							where: {
+								id: user.id, is_email_verified: false
+							}
+						})
+					}
 				}
 
 				const hash = await Bun.password.hash(password, { algorithm: 'bcrypt', cost: 10 })
@@ -82,7 +86,7 @@ const route = new Elysia({ prefix: '/auth' })
 						followers: [],
 						level: 'Silent Soul',
 						points: 0,
-						needs_for_next_level: '500',
+						needs_for_next_level: 500,
 						is_email_verified: false,
 						visibility: ['public'],
 						roles: ['User'],
@@ -90,12 +94,6 @@ const route = new Elysia({ prefix: '/auth' })
 						profile_picture: '',
 						banner: '',
 						collect_history: true,
-						logged_in_devices: [
-							{
-								name: headers.useragent,
-								ip: '' // TODO
-							}
-						],
 						joined_at: new Date(Date.now())
 					}
 				})
