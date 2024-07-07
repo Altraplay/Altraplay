@@ -38,7 +38,7 @@
 	.cards {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-		grid-template-rows: repeat(auto-fill, minmax(280px, .48fr));
+		grid-template-rows: repeat(auto-fill, minmax(280px, 1fr));
     }
 
     @media (max-width: 600px) {
