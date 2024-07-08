@@ -9,11 +9,11 @@
 </script>
 
 <svelte:head>
-	<title>{data.name} - Tech Gunner</title>
-	<meta name="description" content={data.bio} />
+	<title>{data?.name} - Tech Gunner</title>
+	<meta name="description" content={data?.bio} />
 </svelte:head>
 <main class="flex w-full flex-col gap-5">
-	<Img src={data.banner} alt="banner" width="93vw" height="27vh" className="self-center" />
+	<Img src={data?.banner} alt="banner" width="93vw" height="27vh" className="self-center" />
 	<section class="flex translate-x-[340px] flex-col">
 		<div class="p-3 *:px-5">
 			<a

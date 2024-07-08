@@ -26,30 +26,30 @@
 
 <section
 	class="flex max-w-[280px] flex-col items-center justify-center gap-[15px] rounded-lg bg-highlight-1 p-4 {className}">
-	<Img src={data.profile_picture} alt="Profile Picture" width="235px" className="-mt-[65px]" />
+	<Img src={data?.profile_picture} alt="Profile Picture" width="235px" className="-mt-[65px]" />
 	<div class="flex items-center justify-center gap-[3px]">
-		<h3>{data.name}</h3>
-		{#if data.verified}
+		<h3>{data?.name}</h3>
+		{#if data?.verified}
 			<VerifiedIcon className="-mr-5 mt-[2px]" />
 		{/if}
 	</div>
-	<b class="-mt-5 text-lg capitalize text-slate-400">{data.username}</b>
-	<b>{abbreviateNumber(data.followers)}</b>
+	<b class="-mt-5 text-lg capitalize text-slate-400">{data?.username}</b>
+	<b>{abbreviateNumber(data?.followers || 0)}</b>
 	<b class="-mt-3 text-slate-400">Followers</b>
-	<form action="/api/profile/{data.username}/follow" method="POST" use:enhance>
+	<form action="/api/profile/{data?.username}/follow" method="POST" use:enhance>
 		<Button label="Follow" className="w-[13rem]" type="submit" /></form>
-	<a href="/profile/{data.username}/message">
+	<a href="/profile/{data?.username}/message">
 		<Button label="Message" className="w-[13rem]" variant="secondary" />
 	</a>
-	{#if data.bio}
+	{#if data?.bio}
 		<b class="mr-auto">Bio:</b>
 		<p class="-mt-2 mr-auto line-clamp-2 text-base">
-			{@html data.bio}
+			{@html data?.bio}
 		</p>
 	{/if}
-	{#if data.links}
+	{#if data?.links}
 		<b class="mr-auto">Links</b>
-		{#each data.links as link}
+		{#each data?.links as link}
 			<a href={link} target="_blank" class="mr-auto flex gap-2 pt-2"
 				><img
 					src="https://icons.duckduckgo.com/ip3/{link.replace('https://', '').split('/')[0]}.ico"
@@ -65,14 +65,16 @@
 			</a>
 		{/each}
 	{/if}
-	<b class="mr-auto">Level: {data.level}</b>
-	<b class="mr-auto">Points: {abbreviateNumber(data.points)}</b>
-	<b class="mr-auto">Needs for next level: {abbreviateNumber(data.needs_for_next_level)}</b>
-	<b class="mr-auto">Members in team: {abbreviateNumber(data.team)}</b>
-	{#if data.skills.some(e => e.name)}
+	<b class="mr-auto">Level: {data?.level}</b>
+	<b class="mr-auto">Points: {abbreviateNumber(data?.points)}</b>
+	<b class="mr-auto">Needs for next level: {abbreviateNumber(data?.needs_for_next_level)}</b>
+	{#if data?.team}
+	<b class="mr-auto">Members in team: {abbreviateNumber(data?.team)}</b>
+	{/if}
+	{#if data?.skills?.some(e => e.name)}
 		<b class="mr-auto">Skills:</b>
 		<div>
-			{#each data.skills as skill}
+			{#each data?.skills as skill}
 				<span class="text-[.9rem]">{skill.name}:</span>
 
 				<div
@@ -82,10 +84,10 @@
 			{/each}
 		</div>
 	{/if}
-	{#if data.languages.some(e => e.name)}
+	{#if data?.languages?.some(e => e.name)}
 		<b class="mr-auto">Languages:</b>
 		<div>
-			{#each data.languages as language}
+			{#each data?.languages as language}
 				<span class="text-[.9rem]">{language.name}:</span>
 
 				<div
@@ -95,5 +97,5 @@
 			{/each}
 		</div>
 	{/if}
-	<b class="mr-auto">Joined: {formatTime(new Date(data.joined_at))}</b>
+	<b class="mr-auto">Joined: {formatTime(new Date(data?.joined_at))}</b>
 </section>
