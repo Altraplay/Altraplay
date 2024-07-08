@@ -2,6 +2,11 @@ import crypto from 'crypto'
 
 function abbreviateNumber(value: number) {
 	const units = ['', 'K', 'M', 'B', 'T', 'Q', 'QQ']
+
+	if (value === 0) {
+		return '0'
+	}
+
 	const magnitude = Math.floor(Math.log10(Math.abs(value)) / 3)
 	const unit = units[magnitude]
 	const abbreviated = value / Math.pow(10, magnitude * 3)
