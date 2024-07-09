@@ -7,6 +7,7 @@ import auth from '../Controllers/auth'
 import profile from '../Controllers/profile'
 import user from '../Controllers/user'
 import blog from '../Controllers/blog'
+import comment from '../Controllers/comment'
 
 import type { RequestHandler } from './$types'
 
@@ -24,6 +25,7 @@ const app = new Elysia({ prefix: '/api', precompile: true })
 	.use(profile)
 	.use(user)
 	.use(blog)
+	.use(comment)
 
 export const GET: RequestHandler = ({ request }) => app.handle(request)
 export const POST: RequestHandler = ({ request }) => app.handle(request)
