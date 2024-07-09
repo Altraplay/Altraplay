@@ -1,20 +1,3 @@
-interface Comment {
-	id: string
-	comment: string
-	author: string
-	likes: number
-	dislikes: number
-	time: Date
-	replies: {
-		id: string
-		reply: string
-		author: string
-		likes: number
-		dislikes: number
-		time: Date
-	}[]
-}
-
 interface User {
 	id: string
 	username: string
@@ -25,7 +8,7 @@ interface User {
 	profile_picture: string
 	banner: string
 	followers: string[]
-	following?: string[]
+	following: string[]
 	interests: string[]
 	points: number
 	level:
@@ -67,33 +50,9 @@ interface User {
 	}[]
 	is_email_verified: boolean
 	otp?: string
-	notifications?: {
-		id: string
-		title: string
-		link: string
-		type: string
-		seen: boolean
-		date: Date
-	}[]
 	collect_history: boolean
-	liked?: {
-		blogs: string[]
-		posts: string[]
-		comments: string[]
-		videos: string[]
-	}
-	disliked?: {
-		blogs: string[]
-		posts: string[]
-		comments: string[]
-		videos: string[]
-	}
 	blocked?: string[]
 	visibility: string[]
-	logged_in_devices: {
-		name: string
-		ip: string
-	}[]
 	earning?: number
 	achievements?: string[]
 	joined_at: Date
@@ -107,7 +66,6 @@ interface Blog {
 	cover: string
 	likes: number
 	dislikes: number
-	comments?: Comment[]
 	visibility: string[]
 	slashtags: string[]
 	views: number
@@ -121,7 +79,6 @@ interface Post {
 	posted_by: string
 	likes: number
 	dislikes: number
-	comments?: Comment[]
 	visibility: string[]
 	slashtags: string[]
 	views: number
@@ -135,14 +92,9 @@ interface Video {
 	url: string
 	cover: string
 	creator: string
-	credits: {
-		user: string
-		role: string
-	}[]
 	duration: string
 	likes: number
 	dislikes: number
-	comments?: Comment[]
 	visibility: string[]
 	slashtags: string[]
 	views: number
@@ -190,14 +142,77 @@ interface Service {
 	title: string
 	description: string
 	price: string
-	reviews: {
-		reviewer: string
-		review: string
-		rating: number
-		time: Date
-	}[]
 	created_at: Date
 	slashtags: string[]
+}
+
+interface LikedByUser {
+	user_id: string
+	blogs: string[]
+	posts: string[]
+	comments: string[]
+	videos: string[]
+}
+
+interface DislikedByUser {
+	user_id: string
+	blogs: string[]
+	posts: string[]
+	comments: string[]
+	videos: string[]
+}
+
+interface Comment {
+	id: string
+	comment: string
+	author: string
+	likes: number
+	dislikes: number
+	comment_on: string
+	time: Date
+}
+
+interface Reply {
+	id: string
+	comment_id: string
+	reply: string
+	author: string
+	likes: number
+	dislikes: number
+	time: Date
+}
+
+interface Notification {
+	id: string
+	user_id: string
+	title: string
+	link: string
+	type: string
+	seen: boolean
+	date: Date
+}
+
+interface LoggedInDevice {
+	id: string
+	user_id: string
+	name: string
+	ip: string
+}
+
+interface Credit {
+	id: string
+	video_id: string
+	user: string
+	role: string
+}
+
+interface Review {
+	id: string
+	service_id: string
+	reviewer: string
+	review: string
+	rating: number
+	time: Date
 }
 
 export interface Tables {
@@ -210,4 +225,12 @@ export interface Tables {
 	search_history: SearchHistory
 	collections: Collection
 	services: Service
+	liked_by_user: LikedByUser
+	disliked_by_user: DislikedByUser
+	comments: Comment
+	replies: Reply
+	notifications: Notification
+	logged_in_devices: LoggedInDevice
+	credits: Credit
+	reviews: Review
 }
