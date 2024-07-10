@@ -94,25 +94,27 @@ const route = new Elysia({ prefix: '/blog' })
 					select: ['id', 'title', 'author', 'views', 'cover', 'created_at'],
 					where: {
 						visibility: {
-                            value: checkState(headers?.authorization || '') || 'public',
-                            operator: 'CONTAINS'
-                        }
+							value: checkState(headers?.authorization || '') || 'public',
+							operator: 'CONTAINS'
+						}
 					}
 				})
 
-				const list = await Promise.all(
-					blogs?.map(async blog => {
-						const author = await db.findUnique({
-							table: 'users',
-							where: { is_email_verified: true, id: blog.author },
-							select: ['username', 'name', 'profile_picture', 'verified']
+				if (blogs) {
+					const list = await Promise.all(
+						blogs?.map(async blog => {
+							const author = await db.findUnique({
+								table: 'users',
+								where: { is_email_verified: true, id: blog.author },
+								select: ['username', 'name', 'profile_picture', 'verified']
+							})
+
+							return { ...blog, author }
 						})
+					)
 
-						return { ...blog, author }
-					})
-				)
-
-				return list
+					return list
+				}
 			} catch (e) {
 				pushLogs(`Failed to retrieve all blog posts ${e}`)
 				set.status = 500
@@ -148,7 +150,7 @@ const route = new Elysia({ prefix: '/blog' })
 						},
 						select: ['username', 'name', 'profile_picture', 'verified', 'followers']
 					})
-					return {...blog, author}
+					return { ...blog, author }
 				} else {
 					set.status = 404
 					return { err: "This Blog doesn't exist" }
