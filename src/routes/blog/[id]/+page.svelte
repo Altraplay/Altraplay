@@ -4,6 +4,7 @@
 	import Tags from '@Components/Tags.svelte'
 	import VerifiedBadge from '@Components/icons/Verified.svelte'
 	import Img from '@Components/Img.svelte'
+	import Comments from '@Components/Comments.svelte'
 
 	export let data: PageData
 </script>
@@ -51,7 +52,6 @@
 		{:else}
 			<Tags defaultTags={data.slashtags} readOnly className="self-start" />
 		{/if}
-		<h3 class="ml-9">Comments:</h3>
-		<!-- TODO: -->
+		<Comments />
 	</div>
 </main>
